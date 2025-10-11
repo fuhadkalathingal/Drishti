@@ -4,7 +4,7 @@
 Clone this project:
 
 ```shell
-git clone https://github.com/antoinelame/GazeTracking.git
+git clone https://github.com/fuhadkalathingal/Drishti.git
 ```
 
 ### For Pip install
