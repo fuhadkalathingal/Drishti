@@ -1,21 +1,20 @@
 import time
 
-class BlinkDetector:
+class GestureDetector:
     def __init__(
         self, closed_threshold=0.6, open_threshold=0.2, max_fast_blink_duration=0.5,
         max_slow_blink_duration=1.0,
-        gaze_threshold=0.6, 
-        max_fast_gaze_duration=0.5, max_slow_gaze_duration=1.0
+        gaze_threshold=0.6,
+        max_fast_gaze_duration=0.5, max_slow_gaze_duration=1.0,
+        gaze_up_threshold=0.2
     ):
         # Blink Detection
         self.closed_threshold = closed_threshold
         self.open_threshold = open_threshold
         self.max_fast_blink_duration = max_fast_blink_duration
         self.max_slow_blink_duration = max_slow_blink_duration
-        self.left_closed = False
-        self.right_closed = False
-        self.left_start_time = 0
-        self.right_start_time = 0
+        self.eye_closed = False
+        self.blink_start_time = 0
 
         # Gaze Detection
         self.gaze_threshold = gaze_threshold
@@ -26,36 +25,36 @@ class BlinkDetector:
         self.looking_start_time_right = 0
         self.looking_start_time_left = 0
 
+        # Look Up detection
+        self.gaze_up_threshold = gaze_up_threshold
+        self.looking_start_time_up = 0
+        self.looking_up = False
+
     def updateBlinks(self, left_blink, right_blink):
         blink_events = []
 
-        # Left eye
-        if left_blink > self.closed_threshold and not self.left_closed:
-            self.left_closed = True
-            self.left_start_time = time.time()
-        elif left_blink < self.open_threshold and self.left_closed:
-            self.left_closed = False
-            duration = time.time() - self.left_start_time
-            if duration < self.max_fast_blink_duration:
-                blink_events.append("Left blink fast")
-            elif duration < self.max_slow_blink_duration:
-                blink_events.append("Left blink slow")
+        blink = (left_blink + right_blink) / 2
 
-        # Right eye
-        if right_blink > self.closed_threshold and not self.right_closed:
-            self.right_closed = True
-            self.right_start_time = time.time()
-        elif right_blink < self.open_threshold and self.right_closed:
-            self.right_closed = False
-            duration = time.time() - self.right_start_time
+        if blink > self.closed_threshold and not self.eye_closed:
+            self.eye_closed = True
+            self.blink_start_time = time.time()
+        elif blink < self.open_threshold and self.eye_closed:
+            self.eye_closed = False
+            duration = time.time() - self.blink_start_time
             if duration < self.max_fast_blink_duration:
-                blink_events.append("Right blink fast")
+                blink_events.append("blink fast")
             elif duration < self.max_slow_blink_duration:
-                blink_events.append("Right blink slow")
+                blink_events.append("blink slow")
+            else:
+                blink_events.append("eye closed")
 
         return blink_events
 
-    def updateGaze(self, eye_look_in_left, eye_look_out_right, eye_look_in_right, eye_look_out_left):
+    def updateHorizontalGaze(
+        self, 
+        eye_look_in_left, eye_look_out_right,
+        eye_look_in_right, eye_look_out_left
+    ):
         gaze_event = []
 
         eye_look_left = (eye_look_out_left + eye_look_in_right) / 2
@@ -97,3 +96,21 @@ class BlinkDetector:
                     gaze_event.append("Look right slow")
 
         return gaze_event
+
+    def updateUpGaze(self, eyeLookUpLeft, eyeLookUpRight):
+        gaze_up_event = []
+
+        gaze_up = (eyeLookUpLeft + eyeLookUpRight) / 2
+
+        if gaze_up > self.gaze_up_threshold and not self.looking_up:
+            self.looking_up = True
+            self.looking_start_time_up = time.time()
+        elif gaze_up < self.gaze_up_threshold and self.looking_up:
+            self.looking_up = False
+            duration = time.time() - self.looking_start_time_up
+            if duration < self.max_fast_gaze_duration:
+                gaze_up_event.append("Look up fast")
+            elif duration < self.max_slow_gaze_duration:
+                gaze_up_event.append("Look up slow")
+
+        return gaze_up_event
