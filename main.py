@@ -18,7 +18,7 @@ options = FaceLandmarkerOptions(
 )
 
 detector = FaceLandmarker.create_from_options(options)
-blink_detector = BlinkDetector(closed_threshold=0.6, open_threshold=0.2)
+gesture_detector = BlinkDetector(closed_threshold=0.6, open_threshold=0.2)
 
 # Webcam
 cap = cv2.VideoCapture(0)
@@ -35,16 +35,25 @@ while cap.isOpened():
     result = detector.detect(mp_image)
 
     if result.face_blendshapes:
-        blendshapes = result.face_blendshapes[0]  # first face
+        blendshapes = result.face_blendshapes[0]
+
         left_blink = next((b.score for b in blendshapes if b.category_name == "eyeBlinkLeft"), 0.0)
         right_blink = next((b.score for b in blendshapes if b.category_name == "eyeBlinkRight"), 0.0)
+        eye_look_in_left = next((b.score for b in blendshapes if b.category_name == "eyeLookInLeft"), 0.0)
+        eye_look_out_left = next((b.score for b in blendshapes if b.category_name == "eyeLookOutLeft"), 0.0)
+        eye_look_in_right = next((b.score for b in blendshapes if b.category_name == "eyeLookInRight"), 0.0)
+        eye_look_out_right = next((b.score for b in blendshapes if b.category_name == "eyeLookOutRight"), 0.0)
 
-        blink_events = blink_detector.update(left_blink, right_blink)
+        blink_events = gesture_detector.updateBlinks(left_blink, right_blink)
         if len(blink_events) == 2:
             if blink_events[0] == "Left blink fast" and blink_events[1] == "Right blink fast":
                 print("fast blink")
             elif blink_events[0] == "Left blink slow" and blink_events[1] == "Right blink slow":
                 print("slow blink")
+
+        gaze_event = gesture_detector.updateGaze(eye_look_in_left, eye_look_out_right, eye_look_in_right, eye_look_out_left)
+        if (len(gaze_event) == 1):
+            print(gaze_event[0])
 
     cv2.imshow("Eye Landmarks", frame)
     if cv2.waitKey(1) & 0xFF == 27:
