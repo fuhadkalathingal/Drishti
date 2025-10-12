@@ -4,9 +4,9 @@ class GestureDetector:
     def __init__(
         self, closed_threshold=0.6, open_threshold=0.2, max_fast_blink_duration=0.5,
         max_slow_blink_duration=1.0,
-        gaze_threshold=0.6,
+        gaze_enter_threshold=0.6, gaze_exit_threshold=0.55,
         max_fast_gaze_duration=0.5, max_slow_gaze_duration=1.0,
-        gaze_up_threshold=0.2
+        gaze_up_enter_threshold=0.2, gaze_up_exit_threshold=0.18
     ):
         # Blink Detection
         self.closed_threshold = closed_threshold
@@ -17,7 +17,8 @@ class GestureDetector:
         self.blink_start_time = 0
 
         # Gaze Detection
-        self.gaze_threshold = gaze_threshold
+        self.gaze_enter_threshold = gaze_enter_threshold
+        self.gaze_exit_threshold = gaze_exit_threshold
         self.max_fast_gaze_duration = max_fast_gaze_duration
         self.max_slow_gaze_duration = max_slow_gaze_duration
         self.looking_left = False
@@ -26,7 +27,8 @@ class GestureDetector:
         self.looking_start_time_left = 0
 
         # Look Up detection
-        self.gaze_up_threshold = gaze_up_threshold
+        self.gaze_up_enter_threshold = gaze_up_enter_threshold
+        self.gaze_up_exit_threshold = gaze_up_exit_threshold
         self.looking_start_time_up = 0
         self.looking_up = False
 
@@ -70,11 +72,11 @@ class GestureDetector:
             self.looking_left = False
 
         # --- LEFT GAZE ---
-        if eye_look_left > self.gaze_threshold or self.looking_left:
+        if eye_look_left > self.gaze_enter_threshold or self.looking_left:
             if not self.looking_left:
                 self.looking_left = True
                 self.looking_start_time_left = time.time()
-            elif eye_look_left < self.gaze_threshold and self.looking_left:
+            elif eye_look_left < self.gaze_exit_threshold and self.looking_left:
                 self.looking_left = False
                 duration = time.time() - self.looking_start_time_left
                 if duration < self.max_fast_gaze_duration:
@@ -83,11 +85,11 @@ class GestureDetector:
                     gaze_event.append("Look left slow")
 
         # --- RIGHT GAZE ---
-        elif eye_look_right > self.gaze_threshold or self.looking_right:
+        elif eye_look_right > self.gaze_enter_threshold or self.looking_right:
             if not self.looking_right:
                 self.looking_right = True
                 self.looking_start_time_right = time.time()
-            elif eye_look_right < self.gaze_threshold and self.looking_right:
+            elif eye_look_right < self.gaze_exit_threshold and self.looking_right:
                 self.looking_right = False
                 duration = time.time() - self.looking_start_time_right
                 if duration < self.max_fast_gaze_duration:
@@ -102,10 +104,10 @@ class GestureDetector:
 
         gaze_up = (eyeLookUpLeft + eyeLookUpRight) / 2
 
-        if gaze_up > self.gaze_up_threshold and not self.looking_up:
+        if gaze_up > self.gaze_up_enter_threshold and not self.looking_up:
             self.looking_up = True
             self.looking_start_time_up = time.time()
-        elif gaze_up < self.gaze_up_threshold and self.looking_up:
+        elif gaze_up < self.gaze_up_exit_threshold and self.looking_up:
             self.looking_up = False
             duration = time.time() - self.looking_start_time_up
             if duration < self.max_fast_gaze_duration:
@@ -114,3 +116,18 @@ class GestureDetector:
                 gaze_up_event.append("Look up slow")
 
         return gaze_up_event
+
+    def update(
+        self,
+        left_blink, right_blink,
+        eye_look_in_left, eye_look_out_right,
+        eye_look_in_right, eye_look_out_left,
+        eyeLookUpLeft, eyeLookUpRight
+    ):
+        blink_event = self.updateBlinks(left_blink, right_blink)
+        gaze_event = self.updateHorizontalGaze(
+            eye_look_in_left, eye_look_out_right, eye_look_in_right, eye_look_out_left
+        )
+        gaze_up_event = self.updateUpGaze(eyeLookUpLeft, eyeLookUpRight)
+
+        return blink_event + gaze_event + gaze_up_event
