@@ -1,6 +1,6 @@
 import cv2
 import mediapipe as mp
-from face_gesture_detector import GestureDetector
+from eye_gesture_detector import GestureDetector
 
 BaseOptions = mp.tasks.BaseOptions
 FaceLandmarker = mp.tasks.vision.FaceLandmarker
@@ -51,7 +51,7 @@ def get_gesture_frame():
         if len(events) == 1:
             event = events[0]
 
-    return frame, event
+    return event
 
 def release_camera():
     cap.release()

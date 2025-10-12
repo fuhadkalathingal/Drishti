@@ -10,13 +10,7 @@ event_placeholder = st.empty()
 
 try:
     while True:
-        frame, event = get_gesture_frame()
-        if frame is None:
-            continue
-
-        # Convert BGR to RGB for Streamlit
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        placeholder.image(frame_rgb, channels="RGB")
+        event = get_gesture_frame()
 
         if event:
             event_placeholder.text(f"Detected Event: {event}")
