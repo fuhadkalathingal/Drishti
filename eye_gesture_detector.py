@@ -44,11 +44,11 @@ class GestureDetector:
             self.eye_closed = False
             duration = time.time() - self.blink_start_time
             if duration < self.max_fast_blink_duration:
-                blink_events.append("blink fast")
+                blink_events.append("FB")
             elif duration < self.max_slow_blink_duration:
-                blink_events.append("blink slow")
+                blink_events.append("SB")
             else:
-                blink_events.append("eye closed")
+                blink_events.append("VSB")
 
         return blink_events
 
@@ -80,9 +80,9 @@ class GestureDetector:
                 self.looking_left = False
                 duration = time.time() - self.looking_start_time_left
                 if duration < self.max_fast_gaze_duration:
-                    gaze_event.append("Look left fast")
+                    gaze_event.append("FL")
                 elif duration < self.max_slow_gaze_duration:
-                    gaze_event.append("Look left slow")
+                    gaze_event.append("SL")
 
         # --- RIGHT GAZE ---
         elif eye_look_right > self.gaze_enter_threshold or self.looking_right:
@@ -93,9 +93,9 @@ class GestureDetector:
                 self.looking_right = False
                 duration = time.time() - self.looking_start_time_right
                 if duration < self.max_fast_gaze_duration:
-                    gaze_event.append("Look right fast")
+                    gaze_event.append("FR")
                 elif duration < self.max_slow_gaze_duration:
-                    gaze_event.append("Look right slow")
+                    gaze_event.append("SR")
 
         return gaze_event
 
@@ -111,9 +111,9 @@ class GestureDetector:
             self.looking_up = False
             duration = time.time() - self.looking_start_time_up
             if duration < self.max_fast_gaze_duration:
-                gaze_up_event.append("Look up fast")
+                gaze_up_event.append("FU")
             elif duration < self.max_slow_gaze_duration:
-                gaze_up_event.append("Look up slow")
+                gaze_up_event.append("SU")
 
         return gaze_up_event
 
