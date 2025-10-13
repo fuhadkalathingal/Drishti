@@ -9,7 +9,7 @@ MORSE_TO_ALPHA = {
 }
 
 def morse_to_letter(buffer):
-    return MORSE_TO_ALPHA.get(buffer, '?')  # '?' if not a valid Morse code
+    return MORSE_TO_ALPHA.get(buffer, '')  # '' if not a valid Morse code
 
 def event_to_letter(event, buffer, string):
     if event:
@@ -24,9 +24,15 @@ def event_to_letter(event, buffer, string):
             case "FR": 
                 string += " "
             case "FL": 
-                string = string[:-1]
+                if buffer:
+                    buffer = buffer[:-1]
+                else:
+                    string = string[:-1]
             case "SL": 
-                string = ""
+                if buffer:
+                    buffer = ""
+                else:
+                    string = ""
 
     return buffer, string
 
