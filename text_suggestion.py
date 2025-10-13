@@ -1,6 +1,7 @@
 import json
 import os
 from collections import defaultdict, Counter
+from corpus_data import corpus
 
 CACHE_FILE = "user_cache.json"
 
@@ -49,24 +50,16 @@ class Trie:
 # ---------- Load user cache ----------
 if os.path.exists(CACHE_FILE):
     with open(CACHE_FILE, "r") as f:
-        user_cache_raw = json.load(f)
+        raw = json.load(f)
+
     user_cache = defaultdict(Counter)
-    for k, v in user_cache_raw.items():
-        # Convert string back to tuple
-        key_tuple = tuple(eval(k))  # e.g., "('want','to')" -> ('want','to')
+    for k, v in raw.items():
+        key_tuple = tuple(k.split("|")) if "|" in k else k
         user_cache[key_tuple] = Counter(v)
+
 else:
     user_cache = defaultdict(Counter)
 
-# ---------- Global n-gram model (trigrams) ----------
-corpus = [
-    "i want to eat",
-    "i want to sleep",
-    "i like to code",
-    "what is your name",
-    "what is your job",
-    "whether it rains or not"
-]
 global_ngrams = defaultdict(Counter)
 trie = Trie()
 
@@ -106,9 +99,22 @@ def get_suggestions(prefix_or_context, user_cache, global_ngrams, top_n=5, is_pr
     # Return top N suggestions
     return [w for w, _ in suggestions.most_common(top_n)]
 
+# Save user cache
+def save_user_cache():
+    """Save user cache safely to JSON file."""
+    # Convert tuple keys to pipe-separated strings for JSON safety
+    serializable_cache = {
+        "|".join(k) if isinstance(k, tuple) else k: dict(v)
+        for k, v in user_cache.items()
+    }
+
+    with open(CACHE_FILE, "w") as f:
+        json.dump(serializable_cache, f, indent=2)
+
 # ---------- Update user cache ----------
 def update_user_cache(context, next_word):
     user_cache[context][next_word] += 1
+    save_user_cache()
 
 def suggest(user_input, user_cache=None, global_ngrams=None):
     if user_cache is None:
