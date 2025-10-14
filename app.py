@@ -6,6 +6,7 @@ import time
 from eye_gesture import get_gesture_frame, release_camera
 from morse_decoder import event_to_letter
 from text_suggestion import suggest, update_user_cache
+from speech import speak
 
 # --- Dark theme colors ---
 bg_color = "#1e1e1e"
@@ -154,6 +155,9 @@ def update_ui():
 
             elif event == "SU":
                 taking_break = not taking_break
+
+            elif event == "SR":
+                speak(string)
 
             elif current_section == 0:
                 morse_buffer, string = event_to_letter(event, morse_buffer, string)
