@@ -1,0 +1,21 @@
+{
+  "s": {
+    "sleep": 1
+  },
+  "w": {
+    "whether": 1
+  },
+  "wh": {
+    "what": 1
+  },
+  "i": {
+    "is": 1
+  },
+  "what|is": {
+    "the": 1,
+    "your": 1
+  },
+  "is|your": {
+    "name": 1
+  }
+}
