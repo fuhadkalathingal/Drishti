@@ -6,16 +6,74 @@
     "whether": 1
   },
   "wh": {
-    "what": 1
+    "what": 2
   },
   "i": {
-    "is": 1
+    "is": 3,
+    "i": 1
   },
   "what|is": {
     "the": 1,
-    "your": 1
+    "your": 2
   },
   "is|your": {
-    "name": 1
+    "name": 2
+  },
+  "hel": {
+    "help": 1
+  },
+  "h": {
+    "he": 1
+  },
+  "he|is": {
+    "such": 1
+  },
+  "is|such": {
+    "an": 1
+  },
+  "such|an": {
+    "annoying": 1
+  },
+  "an|annoying": {
+    "person": 1
+  },
+  "tha": {
+    "that": 1
+  },
+  "li": {
+    "likes": 1
+  },
+  "foo": {
+    "food": 1
+  },
+  "v": {
+    "visit": 1
+  },
+  "m": {
+    "my": 1
+  },
+  "f": {
+    "friend": 1
+  },
+  "ri": {
+    "right": 1
+  },
+  "n": {
+    "now": 1
+  },
+  "am": {
+    "am": 1
+  },
+  "hu": {
+    "huge": 1
+  },
+  "y": {
+    "you": 1
+  },
+  "ma": {
+    "make": 1
+  },
+  "make|me": {
+    "happy": 1
   }
 }

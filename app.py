@@ -92,106 +92,98 @@ morse_buffer = ""
 string = ""
 
 selected_index = -1
-
 current_section = 0
 taking_break = False
 
 # --- Function to continuously update UI ---
 def update_ui():
     global morse_buffer, string
-    global selected_index
-    global current_section, taking_break
+    global selected_index, current_section, taking_break
+
+    def safe_update(widget, new_text):
+        """Update text only if it actually changed (avoids flicker & CPU use)."""
+        widget.config(state=tk.NORMAL)
+        old_text = widget.get("1.0", tk.END).strip()
+        if old_text != new_text:
+            widget.delete("1.0", tk.END)
+            widget.insert(tk.END, new_text)
+        widget.config(state=tk.DISABLED)
+
+    def refresh_suggestions(suggestions):
+        """Refresh suggestion buttons and highlight the selected one."""
+        for i, btn in enumerate(buttons):
+            if i < len(suggestions):
+                btn.config(text=suggestions[i])
+            else:
+                btn.config(text="")
+
+            btn.config(bg="#007ACC" if i == selected_index else btn_bg)
+
+    def handle_selection(event, prefix_sugg, context_sugg):
+        """Handle user selecting a suggestion."""
+        global string, selected_index
+
+        if event == "FB":  # cycle through suggestions
+            selected_index = (selected_index + 1) % 4
+
+        elif event == "SB":  # confirm selection
+            if prefix_sugg and selected_index < len(prefix_sugg):
+                last_word = string.rstrip().split()[-1]
+                string = string[:len(string) - len(last_word)] + f"{prefix_sugg[selected_index]} "
+                update_user_cache(last_word, prefix_sugg[selected_index])
+            elif context_sugg and selected_index < len(context_sugg):
+                words = string.rstrip().split()
+                string += f"{context_sugg[selected_index]} "
+                update_user_cache((words[-2], words[-1]), context_sugg[selected_index])
+
     try:
         while True:
             event = get_gesture_frame()
-            if event:
-                if event == "FU":
-                    if current_section == 0:
-                        current_section = 1
-                        selected_index = 0
-                    else:
-                        current_section = 0
-                        selected_index = -1
-                elif event == "SU":
-                    if taking_break == False:
-                        taking_break = True
-                    else:
-                        taking_break = False
-                elif current_section == 0:
-                    morse_buffer, string = event_to_letter(event, morse_buffer, string)
+            if not event:
+                time.sleep(0.05)
+                continue
 
-                # Update main string box
-                display_text.config(state=tk.NORMAL)
-                display_text.delete("1.0", tk.END)
-                display_text.insert(tk.END, string)
-                display_text.config(state=tk.DISABLED)
+            # --- Mode switching ---
+            if event == "FU":
+                if current_section == 0:
+                    current_section = 1
+                    selected_index = 0
+                else:
+                    current_section = 0
+                    selected_index = -1
 
-                # Update Morse buffer
-                morse_buffer_display.config(state=tk.NORMAL)
-                morse_buffer_display.delete("1.0", tk.END)
-                morse_buffer_display.insert(tk.END, morse_buffer)
-                morse_buffer_display.config(state=tk.DISABLED)
+            elif event == "SU":
+                taking_break = not taking_break
 
-                # Show latest event
-                event_display.config(state=tk.NORMAL)
-                event_display.delete("1.0", tk.END)
-                event_display.insert(tk.END, str(event))
-                event_display.config(state=tk.DISABLED)
+            elif current_section == 0:
+                morse_buffer, string = event_to_letter(event, morse_buffer, string)
 
-                # Update suggestions
+            # --- UI Updates (efficient) ---
+            safe_update(display_text, string)
+            safe_update(morse_buffer_display, morse_buffer)
+            safe_update(event_display, str(event))
+
+            # --- Suggestions ---
+            prefix_sugg, context_sugg = suggest(string)
+            suggestions = prefix_sugg if prefix_sugg else context_sugg or []
+
+            if current_section == 1:
+                handle_selection(event, prefix_sugg, context_sugg)
+
+                # Refresh string & suggestions after selection
+                safe_update(display_text, string)
                 prefix_sugg, context_sugg = suggest(string)
-                suggestions = prefix_sugg if prefix_sugg else context_sugg
+                suggestions = prefix_sugg if prefix_sugg else context_sugg or []
 
-                if current_section == 1:
-                    if event == "FB":
-                        if selected_index < 3:
-                            selected_index += 1
-                        else:
-                            selected_index = 0
-                    if event == "SB":
-                        if prefix_sugg:
-                            if selected_index < len(prefix_sugg):
-                                last_word = string.rstrip().split()[-1]
-                                string = string[:len(string) - len(last_word)]
-                                string += f"{prefix_sugg[selected_index]} "
-                                update_user_cache(
-                                    last_word,
-                                    prefix_sugg[selected_index]
-                                )
-                                suggestions = []
-                        elif context_sugg:
-                            if selected_index < len(context_sugg):
-                                words = string.rstrip().split()
-                                string += f"{context_sugg[selected_index]} "
-                                update_user_cache(
-                                    (words[-2], words[-1]),
-                                    context_sugg[selected_index]
-                                )
-                                suggestions = []
-
-                        display_text.config(state=tk.NORMAL)
-                        display_text.delete("1.0", tk.END)
-                        display_text.insert(tk.END, string)
-                        display_text.config(state=tk.DISABLED)
-
-                for i, btn in enumerate(buttons):
-                    if i < len(suggestions):
-                        btn.config(text=suggestions[i])
-                    else:
-                        btn.config(text="")  # empty if no suggestion
-
-                    # Highlight selected button
-                    if i == selected_index:
-                        btn.config(bg="#007ACC")  # bright color for selected
-                    else:
-                        btn.config(bg=btn_bg)  # normal button color
+            refresh_suggestions(suggestions)
 
             time.sleep(0.05)
+
     except Exception as e:
         release_camera()
         print(f"Error: {e}")
 
-# Run in separate thread
+# --- Run in separate thread ---
 thread = threading.Thread(target=update_ui, daemon=True)
 thread.start()
 
