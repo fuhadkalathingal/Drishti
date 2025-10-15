@@ -177,57 +177,9 @@ def update_ui():
                 # Refresh string & suggestions after selection
                 safe_update(display_text, string)
                 prefix_sugg, context_sugg = suggest(string)
-<<<<<<< HEAD
-                suggestions = prefix_sugg if prefix_sugg else context_sugg
-
-                if current_section == 1:
-                    if event == "FB":
-                        if selected_index < 3:
-                            selected_index += 1
-                        else:
-                            selected_index = 0
-                    if event == "SB":
-                        if prefix_sugg:
-                            if selected_index < len(prefix_sugg):
-                                last_word = string.rstrip().split()[-1]
-                                string = string[:len(string) - len(last_word)]
-                                string += f"{prefix_sugg[selected_index]} "
-                                update_user_cache(
-                                    last_word,
-                                    prefix_sugg[selected_index]
-                                )
-                                suggestions = []
-                        elif context_sugg:
-                            if selected_index < len(context_sugg):
-                                words = string.rstrip().split()
-                                string += f"{context_sugg[selected_index]} "
-                                update_user_cache(
-                                    (words[-2], words[-1]),
-                                    context_sugg[selected_index]
-                                )
-                                suggestions = []
-
-                        display_text.config(state=tk.NORMAL)
-                        display_text.delete("1.0", tk.END)
-                        display_text.insert(tk.END, string)
-                        display_text.config(state=tk.DISABLED)
-
-                for i, btn in enumerate(buttons):
-                    if i < len(suggestions):
-                        btn.config(text=suggestions[i])
-                    else:
-                        btn.config(text="")  # empty if no suggestion
-
-                    # Highlight selected button
-                    if i == selected_index:
-                        btn.config(bg="#007ACC")  # bright color for selected
-                    else:
-                        btn.config(bg=btn_bg)  # normal button color
-=======
                 suggestions = prefix_sugg if prefix_sugg else context_sugg or []
 
             refresh_suggestions(suggestions)
->>>>>>> master
 
             time.sleep(0.05)
 
