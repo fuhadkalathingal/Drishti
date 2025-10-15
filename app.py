@@ -26,33 +26,68 @@ class DrishtiUI(tk.Tk):
         style.map("TButton", background=[("active", "#333333")])
 
     def build_layout(self):
-        # ---------- MAIN GRID ----------
-        self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(3, weight=1)
 
-        # ---------- TOP SECTION ----------
-        top_frame = ttk.Frame(self)
-        top_frame.grid(row=0, column=0, sticky="nsew", padx=20, pady=(20, 10))
-        top_frame.grid_columnconfigure(0, weight=1)
+        # ---------- SMALL TITLE ----------
+        title_label = ttk.Label(self, text="Drishti", font=("Segoe UI", 18, "bold"), foreground="#FFFFFF", background="#121212")
+        title_label.grid(row=0, column=0, sticky="nw", padx=20, pady=10)
 
-        # --- Title and Subtitle ---
-        title = ttk.Label(top_frame, text="DRISHTI", font=("Segoe UI", 34, "bold"))
-        title.grid(row=0, column=0, pady=(0, 5))
+        # ---------- LETTER BOXES TRIANGLE ----------
+        bottom_frame = ttk.Frame(self)
+        bottom_frame.grid(row=1, column=0, sticky="nsew")
+        bottom_frame.grid_columnconfigure((0,1,2), weight=1)
+        bottom_frame.grid_rowconfigure((0,1), weight=1)
 
-        subtitle = ttk.Label(top_frame, text="From Vision To Voice", font=("Segoe UI", 20, "italic"), foreground="#AAAAAA")
-        subtitle.grid(row=1, column=0, pady=(0, 15))
+        # --- Load clue images ---
+        self.top_clue_image = self.load_image("images/up.jpg", (150, 60))
+        self.left_clue_image = self.load_image("images/left.jpg", (150, 60))
+        self.right_clue_image = self.load_image("images/right.jpg", (150, 60))
 
-        # --- Suggestion Buttons ---
-        suggestion_frame = ttk.Frame(top_frame)
-        suggestion_frame.grid(row=2, column=0, pady=(5, 0))
+        # --- Middle Top Box (A-H) ---
+        top_frame_box = ttk.Frame(bottom_frame)
+        top_frame_box.grid(row=0, column=1, pady=(10,0))  # center top
+        top_clue = tk.Label(top_frame_box, image=self.top_clue_image, bg="#121212")
+        top_clue.pack(pady=5)
+        top_box = ttk.Frame(top_frame_box, style="Card.TFrame")
+        top_box.pack()
+        for ch in "ABCDEFGH":
+            lbl = ttk.Label(top_box, text=ch, style="BoxLabel.TLabel")
+            lbl.pack(side="left", expand=True, fill="both", padx=5, pady=5)
+
+        # --- Left Bottom Box (I-Q) ---
+        left_frame_box = ttk.Frame(bottom_frame)
+        left_frame_box.grid(row=1, column=0, padx=20, pady=(0,10))
+        left_clue = tk.Label(left_frame_box, image=self.left_clue_image, bg="#121212")
+        left_clue.pack(pady=5)
+        left_box = ttk.Frame(left_frame_box, style="Card.TFrame")
+        left_box.pack()
+        for ch in "IJKLMNOPQ":
+            lbl = ttk.Label(left_box, text=ch, style="BoxLabel.TLabel")
+            lbl.pack(side="left", expand=True, fill="both", padx=5, pady=5)
+
+        # --- Right Bottom Box (R-Z) ---
+        right_frame_box = ttk.Frame(bottom_frame)
+        right_frame_box.grid(row=1, column=2, padx=20, pady=(0,10))
+        right_clue = tk.Label(right_frame_box, image=self.right_clue_image, bg="#121212")
+        right_clue.pack(pady=5)
+        right_box = ttk.Frame(right_frame_box, style="Card.TFrame")
+        right_box.pack()
+        for ch in "RSTUVWXYZ":
+            lbl = ttk.Label(right_box, text=ch, style="BoxLabel.TLabel")
+            lbl.pack(side="left", expand=True, fill="both", padx=5, pady=5)
+
+        # ---------- SUGGESTION BUTTONS ----------
+        suggestion_frame = ttk.Frame(self)
+        suggestion_frame.grid(row=2, column=0, pady=(10, 5), padx=300, sticky="ew")
+        suggestion_frame.grid_columnconfigure((0,1,2,3), weight=1)
         for i in range(4):
             btn = ttk.Button(suggestion_frame, text=f"Option {i+1}")
-            btn.grid(row=0, column=i, padx=10, pady=5, sticky="nsew")
-            suggestion_frame.grid_columnconfigure(i, weight=1)
+            btn.grid(row=0, column=i, padx=10, sticky="nsew")
 
-        # ---------- TEXT BOX ----------
+        # ---------- TEXT BOX BELOW ----------
         middle_frame = ttk.Frame(self)
-        middle_frame.grid(row=1, column=0, sticky="ew", padx=300, pady=(10, 5))
+        middle_frame.grid(row=3, column=0, sticky="ew", padx=300, pady=(20, 10))
         middle_frame.grid_columnconfigure(0, weight=1)
 
         text_display = tk.Text(
@@ -69,59 +104,14 @@ class DrishtiUI(tk.Tk):
         text_display.configure(state="disabled")
         text_display.grid(row=0, column=0, sticky="ew")
 
-        # ---------- TRIANGULAR BOTTOM SECTION ----------
-        bottom_frame = ttk.Frame(self)
-        bottom_frame.grid(row=2, column=0, sticky="nsew", padx=40, pady=20)
-        for i in range(3):
-            bottom_frame.grid_columnconfigure(i, weight=1)
-        for i in range(3):
-            bottom_frame.grid_rowconfigure(i, weight=1)
-
-        # --- Load clue images from images folder ---
-        self.top_clue_image = self.load_image("images/up.jpg", (200, 80))
-        self.left_clue_image = self.load_image("images/left.jpg", (200, 80))
-        self.right_clue_image = self.load_image("images/right.jpg", (200, 80))
-
-        # --- Center Top Box (A–H) ---
-        top_clue = tk.Label(bottom_frame, image=self.top_clue_image, bg="#121212")
-        top_clue.grid(row=0, column=1, pady=(0, 10), sticky="n")
-
-        top_box = ttk.Frame(bottom_frame, style="Card.TFrame")
-        top_box.grid(row=1, column=1, sticky="nsew", padx=20, pady=10)
-        for ch in "ABCDEFGH":
-            lbl = ttk.Label(top_box, text=ch, style="BoxLabel.TLabel")
-            lbl.pack(side="left", expand=True, fill="both", padx=8, pady=8)
-
-        # --- Left Bottom Box (I–Q) ---
-        left_clue = tk.Label(bottom_frame, image=self.left_clue_image, bg="#121212")
-        left_clue.grid(row=1, column=0, pady=(0, 10), sticky="s")
-
-        left_box = ttk.Frame(bottom_frame, style="Card.TFrame")
-        left_box.grid(row=2, column=0, sticky="nsew", padx=20, pady=10)
-        for ch in "IJKLMNOPQ":
-            lbl = ttk.Label(left_box, text=ch, style="BoxLabel.TLabel")
-            lbl.pack(side="left", expand=True, fill="both", padx=8, pady=8)
-
-        # --- Right Bottom Box (R–Z) ---
-        right_clue = tk.Label(bottom_frame, image=self.right_clue_image, bg="#121212")
-        right_clue.grid(row=1, column=2, pady=(0, 10), sticky="s")
-
-        right_box = ttk.Frame(bottom_frame, style="Card.TFrame")
-        right_box.grid(row=2, column=2, sticky="nsew", padx=20, pady=10)
-        for ch in "RSTUVWXYZ":
-            lbl = ttk.Label(right_box, text=ch, style="BoxLabel.TLabel")
-            lbl.pack(side="left", expand=True, fill="both", padx=8, pady=8)
-
     def load_image(self, path, size):
         """Load and resize an image from the given path, compatible with all Pillow versions."""
-        # Determine the correct resampling method
         try:
-            resample = Image.Resampling.LANCZOS  # Pillow >= 10
+            resample = Image.Resampling.LANCZOS
         except AttributeError:
-            resample = Image.LANCZOS  # Older versions
+            resample = Image.LANCZOS
 
         if not os.path.exists(path):
-            # fallback to placeholder if image not found
             img = Image.new("RGB", size, color=(60, 60, 60))
         else:
             img = Image.open(path).resize(size, resample)
