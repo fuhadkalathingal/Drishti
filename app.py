@@ -1,197 +1,132 @@
+import os
 import tkinter as tk
-from tkinter import scrolledtext
+from tkinter import ttk
 from PIL import Image, ImageTk
-import threading
-import time
-from eye_gesture import get_gesture_frame, release_camera
-from morse_decoder import event_to_letter
-from text_suggestion import suggest, update_user_cache
-from speech import speak
 
-# --- Dark theme colors ---
-bg_color = "#1e1e1e"
-fg_color = "#ffffff"
-btn_bg = "#333333"
-btn_fg = "#ffffff"
+class DrishtiUI(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Drishti - From Vision To Voice")
+        self.configure(bg="#121212")
+        self.attributes("-fullscreen", True)
+        self.bind("<Escape>", lambda e: self.attributes("-fullscreen", False))
 
-# --- Fullscreen window ---
-root = tk.Tk()
-root.title("Live Eye Gesture Dashboard")
-root.attributes('-fullscreen', True)
-root.configure(bg=bg_color)
+        self.create_styles()
+        self.build_layout()
 
-# --- Top frame ---
-top_frame = tk.Frame(root, bg=bg_color)
-top_frame.pack(fill='both', expand=False, pady=10)
+    def create_styles(self):
+        style = ttk.Style(self)
+        style.theme_use("clam")
 
-# Heading
-heading = tk.Label(top_frame, text="Live Eye Gesture Dashboard",
-                   font=("Helvetica", 32), bg=bg_color, fg=fg_color)
-heading.pack(pady=10)
+        style.configure("TFrame", background="#121212")
+        style.configure("Card.TFrame", background="#1E1E1E", relief="solid", borderwidth=2)
+        style.configure("TLabel", background="#121212", foreground="white", font=("Segoe UI", 16))
+        style.configure("BoxLabel.TLabel", background="#1E1E1E", foreground="white", font=("Segoe UI", 22, "bold"))
+        style.configure("TButton", background="#1E1E1E", foreground="white", font=("Segoe UI", 14), padding=10)
+        style.map("TButton", background=[("active", "#333333")])
 
-# Option buttons (will show suggestions)
-btn_frame = tk.Frame(top_frame, bg=bg_color)
-btn_frame.pack(pady=10)
+    def build_layout(self):
+        # ---------- MAIN GRID ----------
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
-buttons = []
-for i in range(4):
-    btn = tk.Button(btn_frame, text=f"Option {i+1}", width=20,
-                    bg=btn_bg, fg=btn_fg, font=("Helvetica", 16))
-    btn.grid(row=0, column=i, padx=5)
-    buttons.append(btn)
+        # ---------- TOP SECTION ----------
+        top_frame = ttk.Frame(self)
+        top_frame.grid(row=0, column=0, sticky="nsew", padx=20, pady=(20, 10))
+        top_frame.grid_columnconfigure(0, weight=1)
 
-# String display (2 lines)
-display_text = scrolledtext.ScrolledText(top_frame, width=120, height=2,
-                                         font=("Helvetica", 20),
-                                         bg="#2e2e2e", fg=fg_color)
-display_text.insert(tk.END, "")
-display_text.config(state=tk.DISABLED)
-display_text.pack(pady=10)
+        # --- Title and Subtitle ---
+        title = ttk.Label(top_frame, text="DRISHTI", font=("Segoe UI", 34, "bold"))
+        title.grid(row=0, column=0, pady=(0, 5))
 
-# Buffers side by side
-buffer_frame = tk.Frame(top_frame, bg=bg_color)
-buffer_frame.pack(pady=10)
+        subtitle = ttk.Label(top_frame, text="From Vision To Voice", font=("Segoe UI", 20, "italic"), foreground="#AAAAAA")
+        subtitle.grid(row=1, column=0, pady=(0, 15))
 
-# Morse buffer display
-morse_buffer_display = scrolledtext.ScrolledText(buffer_frame, width=60, height=1,
-                                                 font=("Helvetica", 20),
-                                                 bg="#2e2e2e", fg=fg_color)
-morse_buffer_display.insert(tk.END, "")
-morse_buffer_display.config(state=tk.DISABLED)
-morse_buffer_display.grid(row=0, column=0, padx=10)
+        # --- Suggestion Buttons ---
+        suggestion_frame = ttk.Frame(top_frame)
+        suggestion_frame.grid(row=2, column=0, pady=(5, 0))
+        for i in range(4):
+            btn = ttk.Button(suggestion_frame, text=f"Option {i+1}")
+            btn.grid(row=0, column=i, padx=10, pady=5, sticky="nsew")
+            suggestion_frame.grid_columnconfigure(i, weight=1)
 
-# Event display buffer
-event_display = scrolledtext.ScrolledText(buffer_frame, width=60, height=1,
-                                          font=("Helvetica", 20),
-                                          bg="#2e2e2e", fg=fg_color)
-event_display.insert(tk.END, "")
-event_display.config(state=tk.DISABLED)
-event_display.grid(row=0, column=1, padx=10)
+        # ---------- TEXT BOX ----------
+        middle_frame = ttk.Frame(self)
+        middle_frame.grid(row=1, column=0, sticky="ew", padx=300, pady=(10, 5))
+        middle_frame.grid_columnconfigure(0, weight=1)
 
-# Bottom image
-bottom_frame = tk.Frame(root, bg=bg_color)
-bottom_frame.pack(fill='both', expand=True)
+        text_display = tk.Text(
+            middle_frame,
+            bg="#1E1E1E",
+            fg="white",
+            font=("Consolas", 18),
+            wrap="word",
+            relief="solid",
+            bd=2,
+            height=3,
+        )
+        text_display.insert("1.0", "Text will appear here...")
+        text_display.configure(state="disabled")
+        text_display.grid(row=0, column=0, sticky="ew")
 
-img = Image.open("morse_chart.png")
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
+        # ---------- TRIANGULAR BOTTOM SECTION ----------
+        bottom_frame = ttk.Frame(self)
+        bottom_frame.grid(row=2, column=0, sticky="nsew", padx=40, pady=20)
+        for i in range(3):
+            bottom_frame.grid_columnconfigure(i, weight=1)
+        for i in range(3):
+            bottom_frame.grid_rowconfigure(i, weight=1)
 
-new_height = screen_height // 2
-new_width = int(new_height * (img.width / img.height))
-if new_width > screen_width:
-    new_width = screen_width
-    new_height = int(new_width * (img.height / img.width))
+        # --- Load clue images from images folder ---
+        self.top_clue_image = self.load_image("images/up.jpg", (200, 80))
+        self.left_clue_image = self.load_image("images/left.jpg", (200, 80))
+        self.right_clue_image = self.load_image("images/right.jpg", (200, 80))
 
-img = img.resize((new_width, new_height))
-photo = ImageTk.PhotoImage(img)
+        # --- Center Top Box (A–H) ---
+        top_clue = tk.Label(bottom_frame, image=self.top_clue_image, bg="#121212")
+        top_clue.grid(row=0, column=1, pady=(0, 10), sticky="n")
 
-img_label = tk.Label(bottom_frame, image=photo, bg=bg_color)
-img_label.pack(pady=5, expand=True)
+        top_box = ttk.Frame(bottom_frame, style="Card.TFrame")
+        top_box.grid(row=1, column=1, sticky="nsew", padx=20, pady=10)
+        for ch in "ABCDEFGH":
+            lbl = ttk.Label(top_box, text=ch, style="BoxLabel.TLabel")
+            lbl.pack(side="left", expand=True, fill="both", padx=8, pady=8)
 
-# --- Initialize buffers ---
-morse_buffer = ""
-string = ""
+        # --- Left Bottom Box (I–Q) ---
+        left_clue = tk.Label(bottom_frame, image=self.left_clue_image, bg="#121212")
+        left_clue.grid(row=1, column=0, pady=(0, 10), sticky="s")
 
-selected_index = -1
-current_section = 0
-taking_break = False
+        left_box = ttk.Frame(bottom_frame, style="Card.TFrame")
+        left_box.grid(row=2, column=0, sticky="nsew", padx=20, pady=10)
+        for ch in "IJKLMNOPQ":
+            lbl = ttk.Label(left_box, text=ch, style="BoxLabel.TLabel")
+            lbl.pack(side="left", expand=True, fill="both", padx=8, pady=8)
 
-# --- Function to continuously update UI ---
-def update_ui():
-    global morse_buffer, string
-    global selected_index, current_section, taking_break
+        # --- Right Bottom Box (R–Z) ---
+        right_clue = tk.Label(bottom_frame, image=self.right_clue_image, bg="#121212")
+        right_clue.grid(row=1, column=2, pady=(0, 10), sticky="s")
 
-    def safe_update(widget, new_text):
-        """Update text only if it actually changed (avoids flicker & CPU use)."""
-        widget.config(state=tk.NORMAL)
-        old_text = widget.get("1.0", tk.END).strip()
-        if old_text != new_text:
-            widget.delete("1.0", tk.END)
-            widget.insert(tk.END, new_text)
-        widget.config(state=tk.DISABLED)
+        right_box = ttk.Frame(bottom_frame, style="Card.TFrame")
+        right_box.grid(row=2, column=2, sticky="nsew", padx=20, pady=10)
+        for ch in "RSTUVWXYZ":
+            lbl = ttk.Label(right_box, text=ch, style="BoxLabel.TLabel")
+            lbl.pack(side="left", expand=True, fill="both", padx=8, pady=8)
 
-    def refresh_suggestions(suggestions):
-        """Refresh suggestion buttons and highlight the selected one."""
-        for i, btn in enumerate(buttons):
-            if i < len(suggestions):
-                btn.config(text=suggestions[i])
-            else:
-                btn.config(text="")
+    def load_image(self, path, size):
+        """Load and resize an image from the given path, compatible with all Pillow versions."""
+        # Determine the correct resampling method
+        try:
+            resample = Image.Resampling.LANCZOS  # Pillow >= 10
+        except AttributeError:
+            resample = Image.LANCZOS  # Older versions
 
-            btn.config(bg="#007ACC" if i == selected_index else btn_bg)
+        if not os.path.exists(path):
+            # fallback to placeholder if image not found
+            img = Image.new("RGB", size, color=(60, 60, 60))
+        else:
+            img = Image.open(path).resize(size, resample)
+        return ImageTk.PhotoImage(img)
 
-    def handle_selection(event, prefix_sugg, context_sugg):
-        """Handle user selecting a suggestion."""
-        global string, selected_index
-
-        if event == "FB":  # cycle through suggestions
-            selected_index = (selected_index + 1) % 4
-
-        elif event == "SB":  # confirm selection
-            if prefix_sugg and selected_index < len(prefix_sugg):
-                last_word = string.rstrip().split()[-1]
-                string = string[:len(string) - len(last_word)] + f"{prefix_sugg[selected_index]} "
-                update_user_cache(last_word, prefix_sugg[selected_index])
-            elif context_sugg and selected_index < len(context_sugg):
-                words = string.rstrip().split()
-                string += f"{context_sugg[selected_index]} "
-                update_user_cache((words[-2], words[-1]), context_sugg[selected_index])
-
-    try:
-        while True:
-            event = get_gesture_frame()
-            if not event:
-                time.sleep(0.05)
-                continue
-
-            # --- Mode switching ---
-            if event == "FU":
-                if current_section == 0:
-                    current_section = 1
-                    selected_index = 0
-                else:
-                    current_section = 0
-                    selected_index = -1
-
-            elif event == "SU":
-                taking_break = not taking_break
-
-            elif event == "SR":
-                speak(string)
-
-            elif current_section == 0:
-                morse_buffer, string = event_to_letter(event, morse_buffer, string)
-
-            # --- UI Updates (efficient) ---
-            safe_update(display_text, string)
-            safe_update(morse_buffer_display, morse_buffer)
-            safe_update(event_display, str(event))
-
-            # --- Suggestions ---
-            prefix_sugg, context_sugg = suggest(string)
-            suggestions = prefix_sugg if prefix_sugg else context_sugg or []
-
-            if current_section == 1:
-                handle_selection(event, prefix_sugg, context_sugg)
-
-                # Refresh string & suggestions after selection
-                safe_update(display_text, string)
-                prefix_sugg, context_sugg = suggest(string)
-                suggestions = prefix_sugg if prefix_sugg else context_sugg or []
-
-            refresh_suggestions(suggestions)
-
-            time.sleep(0.05)
-
-    except Exception as e:
-        release_camera()
-        print(f"Error: {e}")
-
-# --- Run in separate thread ---
-thread = threading.Thread(target=update_ui, daemon=True)
-thread.start()
-
-# Bind Esc to exit
-root.bind("<Escape>", lambda e: root.destroy())
-
-root.mainloop()
+if __name__ == "__main__":
+    app = DrishtiUI()
+    app.mainloop()
