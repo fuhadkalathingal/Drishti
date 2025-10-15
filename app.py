@@ -177,6 +177,7 @@ def update_ui():
                 # Refresh string & suggestions after selection
                 safe_update(display_text, string)
                 prefix_sugg, context_sugg = suggest(string)
+<<<<<<< HEAD
                 suggestions = prefix_sugg if prefix_sugg else context_sugg
 
                 if current_section == 1:
@@ -222,6 +223,11 @@ def update_ui():
                         btn.config(bg="#007ACC")  # bright color for selected
                     else:
                         btn.config(bg=btn_bg)  # normal button color
+=======
+                suggestions = prefix_sugg if prefix_sugg else context_sugg or []
+
+            refresh_suggestions(suggestions)
+>>>>>>> master
 
             time.sleep(0.05)
 
