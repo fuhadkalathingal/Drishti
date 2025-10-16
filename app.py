@@ -1,4 +1,7 @@
 import tkinter as tk
+from morse_based_typing import DataProvider
+
+datas_obj = DataProvider()
 
 class DrishtiKeyboardUI(tk.Tk):
     def __init__(self):
@@ -37,6 +40,7 @@ class DrishtiKeyboardUI(tk.Tk):
         self.input_box = input_box  # store reference for cursor control
 
         # Suggestion boxes
+        self.word_labels = []
         self.create_suggestions()
 
         # Main container (keyboard + clue)
@@ -57,6 +61,26 @@ class DrishtiKeyboardUI(tk.Tk):
         # Responsive resizing behavior
         self.bind("<Configure>", self.on_resize)
 
+        # Updating the main input class
+        self.fast_loop()
+
+    def fast_loop(self):
+        # Update all of the actions
+        datas_obj.update_all()
+
+        # Set the written string onto the textbox
+        self.input_var.set(datas_obj.written_string)
+
+        # Reset all boxes to normal color
+        for i in range(4):
+            self.word_labels[i].config(text=datas_obj.current_suggestion["suggestion"][i] ,bg=self.key_color)  # reset background
+
+        # Highlight the selected box
+        if datas_obj.current_level == 1:
+            self.word_labels[datas_obj.selected_suggestion_index].config(bg="dark blue")
+
+        self.after(1, self.fast_loop)
+
     def create_suggestions(self):
         suggestion_frame = tk.Frame(self, bg=self.bg_color)
         suggestion_frame.pack(pady=(0, 10))
@@ -65,9 +89,10 @@ class DrishtiKeyboardUI(tk.Tk):
         word_frame = tk.Frame(suggestion_frame, bg=self.bg_color)
         word_frame.pack()
         for i in range(4):
-            lbl = tk.Label(word_frame, text=f"Word{i+1}", bg=self.key_color, fg=self.text_color,
+            lbl = tk.Label(word_frame, text="", bg=self.key_color, fg=self.text_color,
                            font=("Segoe UI", 12), padx=15, pady=8)
             lbl.grid(row=0, column=i, padx=5)
+            self.word_labels.append(lbl)
 
         # Sentence suggestions
         sent_frame = tk.Frame(suggestion_frame, bg=self.bg_color)
@@ -140,6 +165,7 @@ class DrishtiKeyboardUI(tk.Tk):
                  bg=self.key_color, font=("Segoe UI", 12)).pack(anchor="w")
         tk.Label(clue_frame, text="⏱  Very Slow Blink → Enter", fg=self.text_color,
                  bg=self.key_color, font=("Segoe UI", 12)).pack(anchor="w", pady=(10,0))
+
 
     def on_key_press(self, key):
         if key == "Space":
