@@ -23,10 +23,18 @@ class DrishtiKeyboardUI(tk.Tk):
 
         # Input box
         self.input_var = tk.StringVar()
-        input_box = tk.Entry(self, textvariable=self.input_var, font=("Segoe UI", 18),
-                             bg=self.key_color, fg=self.text_color, insertbackground=self.text_color,
-                             relief="flat", justify="center")
+        input_box = tk.Entry(
+            self,
+            textvariable=self.input_var,
+            font=("Segoe UI", 18),
+            bg=self.key_color,
+            fg=self.text_color,
+            insertbackground=self.text_color,
+            relief="flat",
+            justify="left"  # left-aligned
+        )
         input_box.pack(fill="x", padx=50, pady=(10, 20), ipady=10)
+        self.input_box = input_box  # store reference for cursor control
 
         # Suggestion boxes
         self.create_suggestions()
@@ -70,14 +78,15 @@ class DrishtiKeyboardUI(tk.Tk):
             lbl.grid(row=0, column=i, padx=10)
 
     def create_keyboard(self, parent):
+        # Updated alphabetical layout
         self.keyboard_layout = [
-            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],  # Number row stays the same
-            ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
-            ['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'],
-            ['U', 'V', 'W', 'X', 'Y', 'Z'],
-            ['Space', 'Delete']
+            ['1','2','3','4','5','6','7','8','9','0'],  # number row stays same
+            ['A','B','C','D','E','F','G','H','I','J'],
+            ['K','L','M','N','O','P','Q','R','S','T'],
+            ['U','V','W','X','Y','Z'],
+            ['Space','Delete']
         ]
-        
+
         self.morse_dict = {
             '1': '.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...',
             '8':'---..','9':'----.','0':'-----','A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.',
@@ -102,7 +111,7 @@ class DrishtiKeyboardUI(tk.Tk):
                                  font=("Segoe UI", 12, "bold"), relief="flat")
                 label.pack(expand=True, fill="both", padx=1, pady=1)
 
-                # Morse code
+                # Morse code inside key
                 morse_frame = tk.Frame(frame, bg=self.key_color)
                 morse_frame.pack(pady=2)
                 code = self.morse_dict.get(key, "")
@@ -139,6 +148,10 @@ class DrishtiKeyboardUI(tk.Tk):
             self.input_var.set(self.input_var.get()[:-1])
         else:
             self.input_var.set(self.input_var.get() + key)
+
+        # Move cursor to the end
+        self.input_box.icursor(tk.END)
+
         self.highlight_key(key)
 
     def highlight_key(self, key):
