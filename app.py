@@ -24,20 +24,45 @@ class DrishtiKeyboardUI(tk.Tk):
                          font=("Segoe UI", 24, "bold"))
         title.pack(pady=(10, 5))
 
-        # Input box
+        # A frame to contain both input boxes
+        input_frame = tk.Frame(self, bg=self.key_color)
+        input_frame.pack(fill="x", padx=50, pady=(10, 20))
+
+        # --- First input box (full width) ---
         self.input_var = tk.StringVar()
         input_box = tk.Entry(
-            self,
+            input_frame,
             textvariable=self.input_var,
             font=("Segoe UI", 18),
             bg=self.key_color,
             fg=self.text_color,
             insertbackground=self.text_color,
             relief="flat",
-            justify="left"  # left-aligned
+            justify="left"
         )
-        input_box.pack(fill="x", padx=50, pady=(10, 20), ipady=10)
-        self.input_box = input_box  # store reference for cursor control
+        input_box.pack(fill="x", pady=(0, 10), ipady=10)
+        self.input_box = input_box
+
+        # --- Second input box (25% width, left-aligned) ---
+        self.buffer_var = tk.StringVar()
+        buffer_box = tk.Entry(
+            input_frame,
+            textvariable=self.buffer_var,
+            font=("Segoe UI", 18),
+            bg=self.key_color,
+            fg=self.text_color,
+            insertbackground=self.text_color,
+            relief="flat",
+            justify="left"
+        )
+        buffer_box.pack(side="left", fill="x", expand=False, ipadx=10, ipady=10)
+        # Use frame width to control size dynamically
+        input_frame.bind(
+            "<Configure>",
+            lambda e: buffer_box.config(width=int(e.width * 0.25 / 10))  # 25% width dynamically
+        )
+
+        self.second_box = buffer_box
 
         # Suggestion boxes
         self.word_labels = []
@@ -70,6 +95,7 @@ class DrishtiKeyboardUI(tk.Tk):
 
         # Set the written string onto the textbox
         self.input_var.set(datas_obj.written_string)
+        self.buffer_var.set(datas_obj.buffer)
 
         # Reset all boxes to normal color
         for i in range(4):
@@ -105,7 +131,7 @@ class DrishtiKeyboardUI(tk.Tk):
     def create_keyboard(self, parent):
         # Updated alphabetical layout
         self.keyboard_layout = [
-            ['1','2','3','4','5','6','7','8','9','0'],  # number row stays same
+            #['1','2','3','4','5','6','7','8','9','0'],  # number row stays same
             ['A','B','C','D','E','F','G','H','I','J'],
             ['K','L','M','N','O','P','Q','R','S','T'],
             ['U','V','W','X','Y','Z'],
@@ -113,8 +139,9 @@ class DrishtiKeyboardUI(tk.Tk):
         ]
 
         self.morse_dict = {
-            '1': '.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...',
-            '8':'---..','9':'----.','0':'-----','A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.',
+            #'1': '.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...',
+            #'8':'---..','9':'----.','0':'-----',
+            'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.',
             'F':'..-.','G':'--.','H':'....','I':'..','J':'.---','K':'-.-','L':'.-..','M':'--',
             'N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-','U':'..-','V':'...-',
             'W':'.--','X':'-..-','Y':'-.--','Z':'--..','Space':'.....','Delete':'-----'
