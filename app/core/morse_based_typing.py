@@ -16,12 +16,9 @@ class DataProvider:
         self.selected_suggestion_index = 0
 
     def update_selection(self, event):
-        if event == "SR":
-            speak(self.written_string)
-        else:
-            self.buffer, self.written_string = event_to_letter(
-                event, self.buffer, self.written_string
-            )
+        self.buffer, self.written_string = event_to_letter(
+            event, self.buffer, self.written_string
+        )
 
     def update_suggestions(self):
         prefix_sugg, context_sugg = suggest(self.written_string)
@@ -61,6 +58,8 @@ class DataProvider:
         if event:
             if event == "FU":
                 self.current_level = (self.current_level + 1) % 2
+            elif event == "SR":
+                speak(self.written_string)
 
             if self.current_level == 0:
                 self.selected_suggestion_index = 0
