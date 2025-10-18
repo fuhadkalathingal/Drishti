@@ -34,7 +34,7 @@ class DataProvider:
                 self.selected_suggestion_index = (self.selected_suggestion_index + 1) % no_of_suggestions
             else:
                 return
-        elif event == "SB":
+        elif event == "SB" or event == "VSB":
             if self.current_suggestion["type"] == "prefix":
                 # Split into words
                 words = self.written_string.split()
