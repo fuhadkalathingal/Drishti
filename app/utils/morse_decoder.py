@@ -26,12 +26,8 @@ def event_to_letter(event, buffer, string):
             case "FL": 
                 if buffer:
                     buffer = buffer[:-1]
-                else:
-                    string = string[:-1]
             case "SL": 
-                if buffer:
                     buffer = ""
-                else:
                     string = ""
 
     return buffer, string
