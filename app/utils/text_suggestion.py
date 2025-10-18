@@ -108,6 +108,7 @@ def save_user_cache():
         for k, v in user_cache.items()
     }
 
+    os.makedirs("cache", exist_ok=True)
     with open(CACHE_FILE, "w") as f:
         json.dump(serializable_cache, f, indent=2)
 
