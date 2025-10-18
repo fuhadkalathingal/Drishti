@@ -79,10 +79,10 @@ class GestureDetector:
             elif eye_look_left < self.gaze_exit_threshold and self.looking_left:
                 self.looking_left = False
                 duration = time.time() - self.looking_start_time_left
-                if duration < self.max_fast_gaze_duration:
+                if duration < self.max_slow_gaze_duration:
                     gaze_event.append("FL")
-                elif duration < self.max_slow_gaze_duration:
-                    gaze_event.append("SL")
+                #elif duration < self.max_slow_gaze_duration:
+                #    gaze_event.append("SL")
 
         # --- RIGHT GAZE ---
         elif eye_look_right > self.gaze_enter_threshold or self.looking_right:
@@ -112,10 +112,10 @@ class GestureDetector:
         elif gaze_up < self.gaze_up_exit_threshold and self.looking_up:
             self.looking_up = False
             duration = time.time() - self.looking_start_time_up
-            if duration < self.max_fast_gaze_duration:
+            if duration < self.max_slow_gaze_duration:
                 gaze_up_event.append("FU")
-            elif duration < self.max_slow_gaze_duration:
-                gaze_up_event.append("SU")
+            #elif duration < self.max_slow_gaze_duration:
+            #    gaze_up_event.append("SU")
 
         return gaze_up_event
 

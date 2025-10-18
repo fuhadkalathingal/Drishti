@@ -1,3 +1,5 @@
+from app.utils.speech import speak
+
 # Morse Code to Alphabet Mapping (A–Z)
 MORSE_TO_ALPHA = {
     '.-': 'a', '-...': 'b', '-.-.': 'c', '-..': 'd', '.': 'e',
@@ -5,7 +7,8 @@ MORSE_TO_ALPHA = {
     '-.-': 'k', '.-..': 'l', '--': 'm', '-.': 'n', '---': 'o',
     '.--.': 'p', '--.-': 'q', '.-.': 'r', '...': 's', '-': 't',
     '..-': 'u', '...-': 'v', '.--': 'w', '-..-': 'x', '-.--': 'y',
-    '--..': 'z'
+    '--..': 'z',
+    '.....': 'space', '-----': 'delete', '...--': 'play'
 }
 
 def morse_to_letter(buffer):
@@ -19,16 +22,28 @@ def event_to_letter(event, buffer, string):
             case "SB":
                 buffer += "-"
             case "VSB": 
-                string += morse_to_letter(buffer)
+                tmp = morse_to_letter(buffer)
                 buffer = ""
+
+                if tmp == "space":
+                    string += " "
+                elif tmp == "delete":
+                    string = ""
+                elif tmp == "play":
+                    speak(string)
+                else:
+                    string += tmp
+
             case "FR": 
                 string += " "
             case "FL": 
                 if buffer:
-                    buffer = buffer[:-1]
-            case "SL": 
                     buffer = ""
-                    string = ""
+                else:
+                    string = string[:-1]
+            #case "SL": 
+            #        buffer = ""
+            #        string = ""
 
     return buffer, string
 
