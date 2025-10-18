@@ -94,8 +94,11 @@ class DrishtiKeyboardUI(tk.Tk):
         datas_obj.update_all()
 
         # Set the written string onto the textbox
-        self.input_var.set(datas_obj.written_string)
-        self.buffer_var.set(datas_obj.buffer)
+        self.input_var.set(f'"{datas_obj.written_string}"')
+        buffer_string = datas_obj.buffer
+        buffer_string = buffer_string.replace('.', '●')
+        buffer_string = buffer_string.replace('-', '▬')
+        self.buffer_var.set(buffer_string)
 
         # Reset all boxes to normal color
         for i in range(4):
