@@ -192,7 +192,10 @@ class DrishtiKeyboardUI(tk.Tk):
                  bg=self.key_color, font=("Segoe UI", 12)).pack(anchor="w")
         tk.Label(clue_frame, text="⏱  Very Slow Blink → Enter", fg=self.text_color,
                  bg=self.key_color, font=("Segoe UI", 12)).pack(anchor="w", pady=(10,0))
-
+        tk.Label(clue_frame, text="Left Fast → Delete Morse", fg=self.text_color,
+                 bg=self.key_color, font=("Segoe UI", 12)).pack(anchor="w", pady=(10, 0))
+        tk.Label(clue_frame, text="Left Slow → Delete Leter", fg=self.text_color,
+                 bg=self.key_color, font=("Segoe UI", 12)).pack(anchor="w", pady=(10, 0))
 
     def on_key_press(self, key):
         if key == "Space":
