@@ -1,7 +1,7 @@
-from eye_gesture import get_gesture_frame
-from morse_decoder import event_to_letter
-from text_suggestion import suggest, update_user_cache
-from speech import speak
+from app.core.eye_gesture import get_gesture_frame
+from app.utils.morse_decoder import event_to_letter
+from app.utils.text_suggestion import suggest, update_user_cache
+from app.utils.speech import speak
 
 
 class DataProvider:

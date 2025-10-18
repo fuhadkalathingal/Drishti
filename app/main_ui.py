@@ -1,5 +1,5 @@
 import tkinter as tk
-from morse_based_typing import DataProvider
+from app.core.morse_based_typing import DataProvider
 
 datas_obj = DataProvider()
 

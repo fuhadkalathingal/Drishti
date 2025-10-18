@@ -3,7 +3,7 @@ import tkinter as tk
 import random
 import threading
 import time
-from speech import speak
+from utils.speech import speak
 
 # ----------------------------
 # Gemini API Setup
