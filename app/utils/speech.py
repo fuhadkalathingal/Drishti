@@ -34,5 +34,5 @@ def speak(text, lang='en', slow=False):
 
 # Example usage
 if __name__ == '__main__':
-    speak("Hello! Speaking fast using gTTS", slow=False)
-    speak("Hello! Speaking slowly using gTTS.", slow=True)
+    speak("Hello! Speaking fast now.", slow=False)
+    speak("Hello! Speaking slowly now.", slow=True)

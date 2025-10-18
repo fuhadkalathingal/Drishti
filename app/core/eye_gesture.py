@@ -1,6 +1,6 @@
 import cv2
 import mediapipe as mp
-from eye_gesture_detector import GestureDetector
+from app.utils.eye_gesture_detector import GestureDetector
 
 BaseOptions = mp.tasks.BaseOptions
 FaceLandmarker = mp.tasks.vision.FaceLandmarker
@@ -9,7 +9,7 @@ VisionRunningMode = mp.tasks.vision.RunningMode
 
 # Initialize
 options = FaceLandmarkerOptions(
-    base_options=BaseOptions(model_asset_path="face_landmarker.task"),
+    base_options=BaseOptions(model_asset_path="data/face_landmarker.task"),
     running_mode=VisionRunningMode.IMAGE,
     num_faces=1,
     output_face_blendshapes=True

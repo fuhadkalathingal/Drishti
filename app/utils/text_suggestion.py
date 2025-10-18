@@ -1,9 +1,9 @@
 import json
 import os
 from collections import defaultdict, Counter
-from corpus_data import corpus
+from app.utils.corpus_data import corpus
 
-CACHE_FILE = "user_cache.json"
+CACHE_FILE = "cache/user_cache.json"
 
 # ---------- Trie Implementation ----------
 class TrieNode:

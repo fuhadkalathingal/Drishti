@@ -1,9 +1,9 @@
 import os
 import tkinter as tk
-import pyttsx3
 import random
 import threading
 import time
+from utils.speech import speak
 
 # ----------------------------
 # Gemini API Setup
@@ -70,33 +70,10 @@ Format them as: Reply 1 | Reply 2 | Reply 3
 # ----------------------------
 # Text-to-Speech Setup (Refactored for Reliability)
 # ----------------------------
-engine = pyttsx3.init()
-engine.setProperty('rate', 150)
-voices = engine.getProperty('voices')
-target_voice_id = None
-
-# Set a preferred voice (e.g., female if available)
-for voice in voices:
-    if "female" in voice.name.lower() or "zira" in voice.name.lower() or "samantha" in voice.name.lower():
-        target_voice_id = voice.id
-        break
-if target_voice_id:
-    engine.setProperty('voice', target_voice_id)
-
-
-def speak(text):
-    """
-    Speaks the text in a separate daemon thread.
-    This structure is crucial to prevent the main UI thread from blocking.
-    """
-
+def use_speak(text):
     def run_speech():
         try:
-            # Ensure any previous speech is stopped before starting a new one
-            engine.stop()
-            engine.say(text)
-            # This blocking call MUST happen inside the thread
-            engine.runAndWait()
+            speak(text)
         except Exception as e:
             # This print is for local debugging, it won't show in the Canvas environment
             print(f"Speech engine error during runAndWait: {e}")
@@ -104,7 +81,6 @@ def speak(text):
             # Start the daemon thread to handle the blocking speech process
 
     threading.Thread(target=run_speech, daemon=True).start()
-
 
 # ----------------------------
 # Music Playback (Using OS commands)
@@ -343,7 +319,7 @@ class DrishtiAIUI(tk.Tk):
             self.user_name = user_input
             welcome_msg = f"It's wonderful to meet you, {self.user_name}. I'm Drishti, and I'm here to chat whenever you need me. How are you feeling today?"
 
-            speak(welcome_msg)
+            use_speak(welcome_msg)
             self.replace_placeholder_with_response(welcome_msg)
             self.name_asked = False
             self.show_suggestions(["I'm okay", "A little tired", "What can you do?"])
@@ -359,7 +335,7 @@ class DrishtiAIUI(tk.Tk):
             full_ai_message = response
 
             # CRITICAL: Ensure audio starts before or immediately with the text animation
-            speak(full_ai_message)
+            use_speak(full_ai_message)
 
             # Stop animation and replace with the final response text
             self.replace_placeholder_with_response(full_ai_message)
@@ -384,7 +360,7 @@ class DrishtiAIUI(tk.Tk):
                 time.time() - self.last_input_time > self.idle_seconds) and not self.typing_animation_active:
             question = random.choice(friendly_questions)
 
-            speak(question)
+            use_speak(question)
             self.type_ai_response(question)
             self.show_suggestions(["I'm fine", "Tell me the quote", "Yes, please"])
             self.last_input_time = time.time()
