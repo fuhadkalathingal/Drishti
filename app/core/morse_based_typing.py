@@ -12,7 +12,7 @@ class DataProvider:
         self.written_string = ""
 
         # Suggestion related
-        self.current_suggestion = {"suggestion": [], "type": "prefix"}
+        self.current_suggestion = {"suggestion": [], "type": "none"}
         self.selected_suggestion_index = 0
 
     def update_selection(self, event):
@@ -26,9 +26,9 @@ class DataProvider:
     def update_suggestions(self):
         prefix_sugg, context_sugg = suggest(self.written_string)
         self.current_suggestion["suggestion"] = prefix_sugg or context_sugg
-        while len(self.current_suggestion["suggestion"]) != 4:
+        self.current_suggestion["type"] = "context" if context_sugg else "prefix" if prefix_sugg else "none"
+        while len(self.current_suggestion["suggestion"]) < 4:
             self.current_suggestion["suggestion"].append("")
-        self.current_suggestion["type"] = "prefix" if prefix_sugg else "context"
 
     def suggestion_selection(self, event):
         if event == "FB":
@@ -50,7 +50,7 @@ class DataProvider:
 
                 # Update cache
                 update_user_cache(words[-1], self.current_suggestion['suggestion'][self.selected_suggestion_index])
-            else:
+            elif self.current_suggestion["type"] == "context":
                 words = self.written_string.split()
                 self.written_string += f"{self.current_suggestion['suggestion'][self.selected_suggestion_index]} "
                 update_user_cache((words[-2], words[-1]), self.current_suggestion['suggestion'][self.selected_suggestion_index])
