@@ -138,7 +138,7 @@ class DrishtiKeyboardUI(tk.Tk):
             ['A','B','C','D','E','F','G','H','I','J'],
             ['K','L','M','N','O','P','Q','R','S','T'],
             ['U','V','W','X','Y','Z'],
-            ['Space','Delete','Play']
+            ['Space','Delete','Play', 'Chat']
         ]
 
         self.morse_dict = {
@@ -147,7 +147,7 @@ class DrishtiKeyboardUI(tk.Tk):
             'A':'.-','B':'-...','C':'-.-.','D':'-..','E':'.',
             'F':'..-.','G':'--.','H':'....','I':'..','J':'.---','K':'-.-','L':'.-..','M':'--',
             'N':'-.','O':'---','P':'.--.','Q':'--.-','R':'.-.','S':'...','T':'-','U':'..-','V':'...-',
-            'W':'.--','X':'-..-','Y':'-.--','Z':'--..','Space':'.....','Delete':'-----','Play':'...--'
+            'W':'.--','X':'-..-','Y':'-.--','Z':'--..','Space':'.....','Delete':'-----','Play':'...--', 'Chat':'---..'
         }
 
         self.key_labels = []
@@ -195,11 +195,8 @@ class DrishtiKeyboardUI(tk.Tk):
                  bg=self.key_color, font=("Segoe UI", 12)).pack(anchor="w")
         tk.Label(clue_frame, text="⏱  Very Slow Blink → Enter", fg=self.text_color,
                  bg=self.key_color, font=("Segoe UI", 12)).pack(anchor="w", pady=(10,0))
-        tk.Label(clue_frame, text="Left Fast → Delete Morse", fg=self.text_color,
+        tk.Label(clue_frame, text="Left → Delete Letter", fg=self.text_color,
                  bg=self.key_color, font=("Segoe UI", 12)).pack(anchor="w", pady=(10, 0))
-        tk.Label(clue_frame, text="Left Slow → Delete Full", fg=self.text_color,
-                 bg=self.key_color, font=("Segoe UI", 12)).pack(anchor="w", pady=(10, 0))
-
     def on_key_press(self, key):
         if key == "Space":
             self.input_var.set(self.input_var.get() + " ")
