@@ -37,7 +37,7 @@ def event_to_letter(event, buffer, string):
             #    string += " "
             case "FL": 
                 if buffer:
-                    buffer = ""
+                    buffer = buffer[:-1]
                 else:
                     string = string[:-1]
             #case "SL": 
