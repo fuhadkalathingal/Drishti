@@ -33,9 +33,8 @@ def event_to_letter(event, buffer, string):
                     speak(string)
                 else:
                     string += tmp
-
-            case "FR": 
-                string += " "
+            #case "FR": 
+            #    string += " "
             case "FL": 
                 if buffer:
                     buffer = ""
