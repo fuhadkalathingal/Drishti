@@ -1,4 +1,4 @@
-import time
+from time import perf_counter
 
 class GestureDetector:
     def __init__(
@@ -37,18 +37,20 @@ class GestureDetector:
 
         blink = (left_blink + right_blink) / 2
 
+        involountary_blink_duration = 0.05
         if blink > self.closed_threshold and not self.eye_closed:
             self.eye_closed = True
-            self.blink_start_time = time.time()
+            self.blink_start_time = perf_counter()
         elif blink < self.open_threshold and self.eye_closed:
             self.eye_closed = False
-            duration = time.time() - self.blink_start_time
-            if duration < self.max_fast_blink_duration:
-                blink_events.append("FB")
-            elif duration < self.max_slow_blink_duration:
-                blink_events.append("SB")
-            else:
-                blink_events.append("VSB")
+            duration = perf_counter() - self.blink_start_time
+            if duration > involountary_blink_duration:
+                if duration < self.max_fast_blink_duration:
+                    blink_events.append("FB")
+                elif duration < self.max_slow_blink_duration:
+                    blink_events.append("SB")
+                else:
+                    blink_events.append("VSB")
 
         return blink_events
 
@@ -75,10 +77,10 @@ class GestureDetector:
         if eye_look_left > self.gaze_enter_threshold or self.looking_left:
             if not self.looking_left:
                 self.looking_left = True
-                self.looking_start_time_left = time.time()
+                self.looking_start_time_left = perf_counter()
             elif eye_look_left < self.gaze_exit_threshold and self.looking_left:
                 self.looking_left = False
-                duration = time.time() - self.looking_start_time_left
+                duration = perf_counter() - self.looking_start_time_left
                 if duration < self.max_slow_gaze_duration:
                     gaze_event.append("FL")
                 #elif duration < self.max_slow_gaze_duration:
@@ -88,10 +90,10 @@ class GestureDetector:
         elif eye_look_right > self.gaze_enter_threshold or self.looking_right:
             if not self.looking_right:
                 self.looking_right = True
-                self.looking_start_time_right = time.time()
+                self.looking_start_time_right = perf_counter()
             elif eye_look_right < self.gaze_exit_threshold and self.looking_right:
                 self.looking_right = False
-                duration = time.time() - self.looking_start_time_right
+                duration = perf_counter() - self.looking_start_time_right
                 if duration < self.max_fast_gaze_duration:
                     gaze_event.append("SR")
                 #elif duration < self.max_slow_gaze_duration:
@@ -108,10 +110,10 @@ class GestureDetector:
 
         if gaze_up > self.gaze_up_enter_threshold and not self.looking_up:
             self.looking_up = True
-            self.looking_start_time_up = time.time()
+            self.looking_start_time_up = perf_counter()
         elif gaze_up < self.gaze_up_exit_threshold and self.looking_up:
             self.looking_up = False
-            duration = time.time() - self.looking_start_time_up
+            duration = perf_counter() - self.looking_start_time_up
             if duration < self.max_slow_gaze_duration:
                 gaze_up_event.append("FU")
             #elif duration < self.max_slow_gaze_duration:
