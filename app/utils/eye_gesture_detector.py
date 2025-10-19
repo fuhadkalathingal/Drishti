@@ -3,7 +3,7 @@ import time
 class GestureDetector:
     def __init__(
         self, closed_threshold=0.6, open_threshold=0.2, max_fast_blink_duration=0.4,
-        max_slow_blink_duration=0.7,
+        max_slow_blink_duration=0.8,
         gaze_enter_threshold=0.6, gaze_exit_threshold=0.55,
         max_fast_gaze_duration=0.5, max_slow_gaze_duration=1.0,
         gaze_up_enter_threshold=0.2, gaze_up_exit_threshold=0.18
