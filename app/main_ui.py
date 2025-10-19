@@ -112,7 +112,7 @@ class DrishtiKeyboardUI(tk.Tk):
         # --- Added metric tracking ---
         self.metrics_logger.update(self.input_var.get())
 
-        self.after(100, self.fast_loop)  # slightly slower loop (100ms)
+        self.after(1, self.fast_loop)
 
     def create_suggestions(self):
         suggestion_frame = tk.Frame(self, bg=self.bg_color)
