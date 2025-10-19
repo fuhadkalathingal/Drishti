@@ -83,6 +83,8 @@ class GestureDetector:
                 duration = perf_counter() - self.looking_start_time_left
                 if duration < self.max_slow_gaze_duration:
                     gaze_event.append("FL")
+                else:
+                    gaze_event.append("FL")
                 #elif duration < self.max_slow_gaze_duration:
                 #    gaze_event.append("SL")
 
