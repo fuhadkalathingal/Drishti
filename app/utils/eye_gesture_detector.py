@@ -37,18 +37,20 @@ class GestureDetector:
 
         blink = (left_blink + right_blink) / 2
 
+        involountary_blink_duration = 0.05
         if blink > self.closed_threshold and not self.eye_closed:
             self.eye_closed = True
             self.blink_start_time = perf_counter()
         elif blink < self.open_threshold and self.eye_closed:
             self.eye_closed = False
             duration = perf_counter() - self.blink_start_time
-            if duration < self.max_fast_blink_duration:
-                blink_events.append("FB")
-            elif duration < self.max_slow_blink_duration:
-                blink_events.append("SB")
-            else:
-                blink_events.append("VSB")
+            if duration > involountary_blink_duration:
+                if duration < self.max_fast_blink_duration:
+                    blink_events.append("FB")
+                elif duration < self.max_slow_blink_duration:
+                    blink_events.append("SB")
+                else:
+                    blink_events.append("VSB")
 
         return blink_events
 
