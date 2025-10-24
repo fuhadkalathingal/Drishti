@@ -4,66 +4,75 @@ import random
 import threading
 import time
 from utils.speech import speak
+from dotenv import load_dotenv
+from groq import Groq
 
-# ----------------------------
-# Gemini API Setup
-# ----------------------------
-try:
-    from google import genai
+load_dotenv()
 
-    GEMINI_AVAILABLE = True
-except ImportError:
-    GEMINI_AVAILABLE = False
-    # Note: If the Google GenAI SDK is not available, AI functions will use placeholders.
-
-# WARNING: Replace with your actual key for functionality
-API_KEY = ""
-MODEL_NAME = "gemini-2.5-flash"
-
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 def chat_with_gemini(prompt, user_name=None):
-    """Handles the communication with the Gemini API for primary response and suggestions."""
-    if not GEMINI_AVAILABLE:
-        return "Drishti is currently unavailable. Please install the Google GenAI SDK.", []
-
     try:
-        client = genai.Client(api_key=API_KEY)
-
-        # System prompt is enhanced to guide suggestions and conversation flow
         system_prompt = f"""
-You are Drishti, a friendly, empathetic, and supportive AI companion for people with ALS.
-- Always maintain a gentle and caring tone.
-- Your primary goal is to provide comfort, information, or light engagement.
-- After every response, ask a single, short, open-ended question that encourages a caring conversation flow.
-- Use the user's name naturally if known.
-"""
+        You are Drishti, a friendly, empathetic, and supportive AI companion for people with ALS.
+        - Always maintain a gentle and caring tone.
+        - Your primary goal is to provide comfort, information, or light engagement.
+        - After every response, ask a single, short, open-ended question that encourages a caring conversation flow.
+        - Use the user's name naturally if known.
+        """
+
         if user_name:
             system_prompt += f"\n- User's name is {user_name}."
 
         full_prompt = f"{system_prompt}\nUser: {prompt}\nDrishti:"
 
-        # 1. Get main response (including the suggested follow-up question)
-        main_resp = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=full_prompt
-        )
-        main_text = main_resp.text.strip()
+        main_resp = client.chat.completions.create(
+            messages=[
+                # Set an optional system message. This sets the behavior of the
+                # assistant and can be used to provide specific instructions for
+                # how it should behave throughout the conversation.
+                {
+                    "role": "system",
+                    "content": full_prompt
+                },
+                # Set a user message for the assistant to respond to.
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
 
-        # 2. Generate conversation suggestions based on the response
-        suggestion_resp = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=f"""
-Given Drishti's reply: "{main_text}", suggest 3 short, relevant replies the user might type to keep the conversation flowing naturally.
-Format them as: Reply 1 | Reply 2 | Reply 3
-"""
+            # The language model which will generate the completion.
+            model="llama-3.3-70b-versatile"
         )
-        suggestion_text = suggestion_resp.text.strip()
+
+        main_text = main_resp.choices[0].message.content.strip()
+
+        content = f"""
+        Given Drishti's reply: "{main_text}", suggest 3 short, relevant replies the user might type
+        to keep the conversation flowing naturally.
+        Format them as: Reply 1 | Reply 2 | Reply 3
+        where the replies are short
+        """
+        suggeston_resp = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": content
+                }
+            ],
+
+            model="llama-3.3-70b-versatile"
+
+        )
+
+        suggestion_text = suggeston_resp.choices[0].message.content.strip()
         suggestions = [s.strip() for s in suggestion_text.split('|') if s.strip()][:3]
 
         return main_text, suggestions
 
     except Exception as e:
-        print(f"Gemini API failed: {e}")
+        print(f"Groq API failed: {e}")
         return "Drishti response unavailable due to API error. Try checking your internet connection.", []
 
 
