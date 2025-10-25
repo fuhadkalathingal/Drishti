@@ -3,3 +3,6 @@ mediapipe
 numpy
 pygame
 tkinter
+python-dotenv
+groq
+pyyaml
