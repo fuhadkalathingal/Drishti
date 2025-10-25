@@ -2,7 +2,7 @@ from app.core.eye_gesture import get_gesture_frame
 from app.utils.morse_decoder import event_to_letter
 from app.utils.text_suggestion import suggest, update_user_cache
 from app.utils.speech import speak
-
+from app.utils.sentence_suggestion import suggest_sentences
 
 class DataProvider:
     def __init__(self):
@@ -14,6 +14,7 @@ class DataProvider:
         # Suggestion related
         self.current_suggestion = {"suggestion": [], "type": "none"}
         self.selected_suggestion_index = 0
+        self.api_suggestion = []
 
     def update_selection(self, event):
         self.buffer, self.written_string = event_to_letter(
@@ -27,6 +28,13 @@ class DataProvider:
         while len(self.current_suggestion["suggestion"]) < 4:
             self.current_suggestion["suggestion"].append("")
 
+        if self.written_string.endswith(' ') and not self.api_suggestion:
+            self.api_suggestion = suggest_sentences(self.written_string)
+        elif not self.written_string.endswith(' '):
+            self.api_suggestion = []
+
+        self.current_suggestion["suggestion"].extend(self.api_suggestion if self.api_suggestion else ["", ""])
+
     def suggestion_selection(self, event):
         if event == "FB":
             no_of_suggestions = len(self.current_suggestion["suggestion"])
@@ -35,22 +43,25 @@ class DataProvider:
             else:
                 return
         elif event == "SB" or event == "VSB":
-            if self.current_suggestion["type"] == "prefix":
-                # Split into words
-                words = self.written_string.split()
+            if self.selected_suggestion_index < 4:
+                if self.current_suggestion["type"] == "prefix":
+                    # Split into words
+                    words = self.written_string.split()
 
-                # Replace the last word with the selected suggestion
-                words[-1] = self.current_suggestion['suggestion'][self.selected_suggestion_index]
+                    # Replace the last word with the selected suggestion
+                    words[-1] = self.current_suggestion['suggestion'][self.selected_suggestion_index]
 
-                # Reconstruct the string
-                self.written_string = " ".join(words) + " "  # add space after suggestion
+                    # Reconstruct the string
+                    self.written_string = " ".join(words) + " "  # add space after suggestion
 
-                # Update cache
-                update_user_cache(words[-1], self.current_suggestion['suggestion'][self.selected_suggestion_index])
-            elif self.current_suggestion["type"] == "context":
-                words = self.written_string.split()
-                self.written_string += f"{self.current_suggestion['suggestion'][self.selected_suggestion_index]} "
-                update_user_cache((words[-2], words[-1]), self.current_suggestion['suggestion'][self.selected_suggestion_index])
+                    # Update cache
+                    update_user_cache(words[-1], self.current_suggestion['suggestion'][self.selected_suggestion_index])
+                elif self.current_suggestion["type"] == "context":
+                    words = self.written_string.split()
+                    self.written_string += f"{self.current_suggestion['suggestion'][self.selected_suggestion_index]} "
+                    update_user_cache((words[-2], words[-1]), self.current_suggestion['suggestion'][self.selected_suggestion_index])
+            else:
+                self.written_string = self.current_suggestion["suggestion"][self.selected_suggestion_index]
 
     def update_all(self):
         event = get_gesture_frame()

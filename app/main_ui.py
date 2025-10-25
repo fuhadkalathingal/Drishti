@@ -66,6 +66,7 @@ class DrishtiKeyboardUI(tk.Tk):
 
         # Suggestion boxes
         self.word_labels = []
+        self.sentence_labels = []
         self.create_suggestions()
 
         # Main container (keyboard + clue)
@@ -106,8 +107,16 @@ class DrishtiKeyboardUI(tk.Tk):
         for i in range(4):
             self.word_labels[i].config(text=datas_obj.current_suggestion["suggestion"][i],
                                        bg=self.key_color)
+
+        for i in range(2):
+            self.sentence_labels[i].config(text=datas_obj.current_suggestion["suggestion"][i + 4],
+                                       bg=self.key_color)
+
         if datas_obj.current_level == 1:
-            self.word_labels[datas_obj.selected_suggestion_index].config(bg="dark blue")
+            if datas_obj.selected_suggestion_index < 4:
+                self.word_labels[datas_obj.selected_suggestion_index].config(bg="dark blue")
+            else:
+                self.sentence_labels[datas_obj.selected_suggestion_index - 4].config(bg="dark blue")
 
         # --- Added metric tracking ---
         self.metrics_logger.update(self.input_var.get())
@@ -129,10 +138,11 @@ class DrishtiKeyboardUI(tk.Tk):
         sent_frame = tk.Frame(suggestion_frame, bg=self.bg_color)
         sent_frame.pack(pady=(10, 0))
         for i in range(2):
-            lbl = tk.Label(sent_frame, text=f"Sentence{i+1}", bg=self.key_color,
+            lbl = tk.Label(sent_frame, text=f"", bg=self.key_color,
                            fg=self.text_color, font=("Segoe UI", 12),
                            padx=30, pady=10)
             lbl.grid(row=0, column=i, padx=10)
+            self.sentence_labels.append(lbl)
 
     def create_keyboard(self, parent):
         self.keyboard_layout = [
