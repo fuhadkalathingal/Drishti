@@ -12,17 +12,16 @@ from app.core.eye_gesture import reload_gesture_detector
 # ---------------------------------------------------------------------
 # CONFIGURATION CONSTANTS
 # ---------------------------------------------------------------------
-CONFIG_PATH = Path("config.yaml")
-BACKUP_DIR = Path("config_backups")
+CONFIG_PATH = Path("../config.yaml")
+BACKUP_DIR = Path("../config_backups")
 BACKUP_DIR.mkdir(exist_ok=True)
 
-# calibration tuning parameters
 MIN_VAL, MAX_VAL = 0.0, 1.0
-STEP_SMALL = 0.01          # normal adjustment step
-STEP_LARGE = 0.03          # larger adjustment (for repeated failures)
-REQUIRED_FAILURES = 3      # number of consecutive fails before changing
-HYSTERESIS_MARGIN = 0.05   # maintain logical threshold separation
-ROLLING_WINDOW = 6         # how many outcomes to remember
+STEP_SMALL = 0.01
+STEP_LARGE = 0.03
+REQUIRED_FAILURES = 3
+HYSTERESIS_MARGIN = 0.05
+ROLLING_WINDOW = 6
 
 file_lock = threading.Lock()
 failure_counters = {"FB": 0, "SB": 0, "VSB": 0, "FL": 0, "FR": 0, "FU": 0}
@@ -30,7 +29,7 @@ recent_outcomes = deque(maxlen=ROLLING_WINDOW)
 
 
 # ---------------------------------------------------------------------
-# HELPER FUNCTIONS FOR CONFIG MANAGEMENT
+# CONFIG FUNCTIONS
 # ---------------------------------------------------------------------
 def backup_config():
     ts = time.strftime("%Y%m%d-%H%M%S")
@@ -57,7 +56,6 @@ def safe_save_config(d):
 
 
 def consider_adjustment(expected_event: str):
-    """Only adjusts after repeated failures for the same calibration step."""
     failure_counters[expected_event] += 1
     recent_outcomes.append((expected_event, time.time()))
 
@@ -65,7 +63,6 @@ def consider_adjustment(expected_event: str):
         print(f"[calib] {expected_event} failed ({failure_counters[expected_event]}/{REQUIRED_FAILURES}), waiting...")
         return
 
-    # perform adjustment now
     cfg = safe_load_config()
     for k in cfg:
         cfg[k] = float(cfg[k])
@@ -98,19 +95,60 @@ def consider_adjustment(expected_event: str):
     for k, v in cfg.items():
         print(f"   {k}: {v}")
 
-    failure_counters[expected_event] = 0  # reset counter after adjustment
+    failure_counters[expected_event] = 0
 
 
 # ---------------------------------------------------------------------
-# MAIN TKINTER UI
+# MODERN DARK UI
 # ---------------------------------------------------------------------
 class CalibrationUI(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Gaze Calibration")
-        self.geometry("700x400")
-        self.configure(bg="#121212")
+        self.title("✨ Gaze Calibration")
+        self.geometry("720x420")
+        self.configure(bg="#0F1115")
 
+        # Modern ttk styling
+        style = ttk.Style(self)
+        self.tk.call("source", "sun-valley.tcl") if Path("sun-valley.tcl").exists() else None
+        try:
+            style.theme_use("clam")
+        except:
+            pass
+
+        style.configure(
+            "TLabel",
+            background="#0F1115",
+            foreground="#E0E0E0",
+            font=("Segoe UI", 12),
+        )
+        style.configure(
+            "Header.TLabel",
+            background="#0F1115",
+            foreground="#00FFC6",
+            font=("Segoe UI Semibold", 22),
+        )
+        style.configure(
+            "Status.TLabel",
+            background="#0F1115",
+            foreground="#AAAAAA",
+            font=("Segoe UI", 14),
+        )
+        style.configure(
+            "TButton",
+            background="#1F2127",
+            foreground="#FFFFFF",
+            font=("Segoe UI", 12),
+            padding=8,
+            relief="flat",
+        )
+        style.map(
+            "TButton",
+            background=[("active", "#00FFC6"), ("pressed", "#00D4A0")],
+            foreground=[("active", "#000000"), ("pressed", "#000000")],
+        )
+
+        # Steps
         self.steps = [
             ("Blink fast (under 0.4s)", "FB"),
             ("Blink slow (0.4–1.0s)", "SB"),
@@ -121,15 +159,20 @@ class CalibrationUI(tk.Tk):
         ]
         self.current_step = 0
 
-        # UI elements
-        self.label = ttk.Label(self, text="", font=("Arial", 20))
-        self.label.pack(expand=True, pady=20)
+        # Header label
+        self.label = ttk.Label(self, text="", style="Header.TLabel")
+        self.label.pack(expand=True, pady=30)
 
-        self.status_label = ttk.Label(self, text="", font=("Arial", 14))
+        self.status_label = ttk.Label(self, text="", style="Status.TLabel")
         self.status_label.pack()
 
+        # Start button
         self.start_button = ttk.Button(self, text="Start Calibration", command=self.start_calibration)
-        self.start_button.pack(pady=20)
+        self.start_button.pack(pady=25)
+
+        # subtle bottom info
+        self.footer = ttk.Label(self, text="Eye gesture calibration system", font=("Segoe UI", 9), foreground="#555555")
+        self.footer.pack(side="bottom", pady=10)
 
     def start_calibration(self):
         self.start_button.pack_forget()
@@ -137,31 +180,28 @@ class CalibrationUI(tk.Tk):
 
     def run_next_step(self):
         if self.current_step >= len(self.steps):
-            self.label.config(text="✅ Calibration Complete!", foreground="green")
+            self.label.config(text="✅ Calibration Complete!", foreground="#00FFC6")
             self.status_label.config(text="")
             return
 
         step_text, expected_event = self.steps[self.current_step]
         self.expected_event = expected_event
         self.start_time = time.time()
-        self.label.config(text=f"Please {step_text}", foreground="white")
-        self.status_label.config(text="Waiting for detection...", foreground="gray")
+        self.label.config(text=f"Please {step_text}", foreground="#FFFFFF")
+        self.status_label.config(text="Waiting for detection...", foreground="#AAAAAA")
         self.check_event()
 
     def check_event(self):
-        """Poll detector without blocking."""
-        event = get_gesture_frame()  # must return something like "FB", "SB", etc.
+        event = get_gesture_frame()
 
         if event == self.expected_event:
-            self.status_label.config(text=f"✔ {self.expected_event} detected!", foreground="green")
+            self.status_label.config(text=f"✔ {self.expected_event} detected!", foreground="#00FFC6")
             print(f"[calib] Step {self.expected_event} successful.")
             self.after(1000, self.next_step)
         elif time.time() - self.start_time > 6.0:
-            self.status_label.config(text=f"❌ Not detected. Try again.", foreground="red")
+            self.status_label.config(text=f"❌ Not detected. Try again.", foreground="#FF4E4E")
             self.retry_button = ttk.Button(self, text="Retry", command=self.retry_step)
             self.retry_button.pack(pady=10)
-
-            # perform safe calibration adjustment
             consider_adjustment(self.expected_event)
         else:
             self.after(100, self.check_event)

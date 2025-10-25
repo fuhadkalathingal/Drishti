@@ -1,6 +1,6 @@
 closed_threshold: 0.6
 open_threshold: 0.2
-gaze_enter_threshold: 0.59
-gaze_exit_threshold: 0.64
+gaze_enter_threshold: 0.6
+gaze_exit_threshold: 0.55
 gaze_up_enter_threshold: 0.2
 gaze_up_exit_threshold: 0.18
