@@ -1,7 +1,6 @@
 opencv-python
 mediapipe
-numpy
-gtts
 pygame
-pyttsx3
 tkinter
+python-dotenv
+groq
