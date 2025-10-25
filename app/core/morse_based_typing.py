@@ -69,7 +69,7 @@ class DataProvider:
         if event:
             if event == "FU":
                 self.current_level = (self.current_level + 1) % 2
-            elif event == "SR":
+            elif event == "FR":
                 speak(self.written_string)
 
             if self.current_level == 0:
