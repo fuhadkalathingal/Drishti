@@ -26,42 +26,56 @@ class DrishtiKeyboardUI(tk.Tk):
                          font=("Segoe UI", 24, "bold"))
         title.pack(pady=(10, 5))
 
-        # A frame to contain both input boxes
+        # --- Input Section (center aligned) ---
         input_frame = tk.Frame(self, bg=self.key_color)
         input_frame.pack(fill="x", padx=50, pady=(10, 20))
 
-        # --- First input box (full width) ---
+        # Use an inner frame to center-align both boxes vertically
+        inner_frame = tk.Frame(input_frame, bg=self.key_color)
+        inner_frame.pack(anchor="center", fill="x")
+
+        # --- Full-width input box (on top) ---
         self.input_var = tk.StringVar()
         input_box = tk.Entry(
-            input_frame,
+            inner_frame,
             textvariable=self.input_var,
             font=("Segoe UI", 18),
             bg=self.key_color,
             fg=self.text_color,
             insertbackground=self.text_color,
             relief="flat",
-            justify="left"
+            justify="center"  # center align text
         )
-        input_box.pack(fill="x", pady=(0, 10), ipady=10)
+        input_box.pack(fill="x", ipadx=10, ipady=10, pady=(0, 10))
         self.input_box = input_box
 
-        # --- Second input box (25% width, left-aligned) ---
+        # --- Smaller buffer box (centered below, 25% width) ---
         self.buffer_var = tk.StringVar()
+
+        # Wrapper frame to help center the smaller box
+        buffer_wrapper = tk.Frame(inner_frame, bg=self.key_color)
+        buffer_wrapper.pack(fill="x")
+
         buffer_box = tk.Entry(
-            input_frame,
+            buffer_wrapper,
             textvariable=self.buffer_var,
             font=("Segoe UI", 18),
             bg=self.key_color,
             fg=self.text_color,
             insertbackground=self.text_color,
             relief="flat",
-            justify="left"
+            justify="center"
         )
-        buffer_box.pack(side="left", fill="x", expand=False, ipadx=10, ipady=10)
-        input_frame.bind(
-            "<Configure>",
-            lambda e: buffer_box.config(width=int(e.width * 0.25 / 10))
-        )
+        # Center the buffer box inside the wrapper using pack
+        buffer_box.pack(ipadx=10, ipady=10, pady=(0, 0), side="top")
+
+        # Dynamically set width to 25% of inner_frame width
+        def resize_buffer(event):
+            new_width = int(event.width * 0.25)
+            buffer_box.config(width=new_width)
+
+        inner_frame.bind("<Configure>", resize_buffer)
+
         self.second_box = buffer_box
 
         # Suggestion boxes
