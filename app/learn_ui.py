@@ -93,12 +93,12 @@ BASIC_FUNCTIONS_SEQ = [".", "-", "ENTER"]
 # -----------------------------
 # ALS-Friendly Guided Morse Learner
 # -----------------------------
-class GuidedMorseLearner(tk.Tk):
+class GuidedMorseLearner(tk.Toplevel):
     SYMBOL_TRANSITION_DELAY = 800  # ms between symbols
     LETTER_INSERT_DELAY = 500      # ms after ENTER to move next letter
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, master=None):
+        super().__init__(master)
         self.title("Drishti — Guided Morse Learning")
         self.geometry("1150x700")
         self.configure(bg=BG)
@@ -327,9 +327,33 @@ class GuidedMorseLearner(tk.Tk):
                 self.after(self.SYMBOL_TRANSITION_DELAY, self.start_next_symbol)
 
 
-# --------------------------
-# Run the app
-# --------------------------
-if __name__ == "__main__":
-    app = GuidedMorseLearner()
-    app.mainloop()
+def run_learn_ui(root):
+    """Run the Guided Morse Learning UI safely inside a shared Tk root."""
+    root.withdraw()
+
+    app = GuidedMorseLearner(root)
+
+    def on_complete():
+        app.destroy()
+        root.quit()
+
+    def on_close():
+        """Handle window close (X button)."""
+        app.destroy()
+        root.quit()
+
+    app.protocol("WM_DELETE_WINDOW", on_close)
+
+    original_start_next_symbol = app.start_next_symbol
+
+    def patched_start_next_symbol():
+        if app.current_level_index >= len(app.levels):
+            app.instruction_text.config(text="All levels completed! Well done!")
+            speak("All levels completed. Well done!")
+            app.after(2000, on_complete)
+            return
+        original_start_next_symbol()
+
+    app.start_next_symbol = patched_start_next_symbol
+    app.after(50, app.start_next_symbol)
+    root.mainloop()
