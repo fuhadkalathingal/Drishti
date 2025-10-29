@@ -18,5 +18,6 @@ user_cache.json
 # for testing purposes
 temp_speech.mp3
 cache/user_progress.json
+cache/username.json
 
 .idea/

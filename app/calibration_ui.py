@@ -174,6 +174,29 @@ class CalibrationUI(tk.Toplevel):
         self.footer = ttk.Label(self, text="Eye gesture calibration system", font=("Segoe UI", 9), foreground="#555555")
         self.footer.pack(side="bottom", pady=10)
 
+        # --- Username entry box (bottom right corner) ---
+        username_frame = tk.Frame(self, bg="#0F1115")
+        username_frame.place(relx=1.0, rely=1.0, anchor="se", x=-20, y=-15)
+
+        ttk.Label(username_frame, text="Username:", style="Status.TLabel").pack(side="left", padx=(0,5))
+        self.username_var = tk.StringVar()
+
+        # Load existing name if present
+        if USERNAME_FILE.exists():
+            try:
+                with open(USERNAME_FILE, "r") as f:
+                    existing = json.load(f)
+                    self.username_var.set(existing.get("name", ""))
+            except Exception:
+                pass
+
+        username_entry = ttk.Entry(username_frame, textvariable=self.username_var, width=20)
+        username_entry.pack(side="left")
+
+        save_btn = ttk.Button(username_frame, text="💾 Save",
+                              command=lambda: save_username(self.username_var.get()))
+        save_btn.pack(side="left", padx=(5,0))
+
     def start_calibration(self):
         self.start_button.pack_forget()
         self.run_next_step()
@@ -245,3 +268,14 @@ def run_calibration_ui(root):
 
     app.run_next_step = patched_run_next_step
     root.mainloop()
+
+import json
+
+USERNAME_FILE = Path("cache/username.json")
+
+def save_username(name: str):
+    """Save username to a simple JSON file."""
+    data = {"name": name.strip() or "unknown"}
+    with open(USERNAME_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+    print(f"[calib] Username saved: {data}")
