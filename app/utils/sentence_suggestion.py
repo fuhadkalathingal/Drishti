@@ -1,151 +1,191 @@
 import os
 import json
+import threading
+import time
 from collections import defaultdict
 from groq import Groq
 from dotenv import load_dotenv
 
 # -----------------------------
-# Load environment and initialize Groq
+# Environment & File Setup
 # -----------------------------
 load_dotenv()
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
-# -----------------------------
-# File paths
-# -----------------------------
-DATASET_FILE = "drishti_llm_training.jsonl"
-HISTORY_FILE = "user_history.json"
+CACHE_DIR = "cache"
+os.makedirs(CACHE_DIR, exist_ok=True)
+
+DATASET_FILE = os.path.join(CACHE_DIR, "drishti_llm_training.jsonl")
+HISTORY_FILE = os.path.join(CACHE_DIR, "user_history.json")
 
 # -----------------------------
-# Load dataset from JSONL
+# Global Memory Cache
 # -----------------------------
-def load_dataset():
-    dataset = {}
+dataset_cache = {}
+history_cache = defaultdict(int)
+lock = threading.Lock()
+
+
+# -----------------------------
+# Data Preload
+# -----------------------------
+def preload_data():
+    """Load dataset and history to memory once at startup."""
+    global dataset_cache, history_cache
+    start = time.time()
+
+    # Load dataset
     if os.path.exists(DATASET_FILE):
-        with open(DATASET_FILE, "r") as f:
+        with open(DATASET_FILE, "r", encoding="utf-8") as f:
             for line in f:
                 try:
                     entry = json.loads(line.strip())
-                    dataset[entry["keyword"].lower()] = entry["sentences"]
-                except json.JSONDecodeError:
+                    key = entry["keyword"].lower().strip()
+                    # Merge sentences uniquely
+                    if key not in dataset_cache:
+                        dataset_cache[key] = list(dict.fromkeys(entry["sentences"]))
+                    else:
+                        for s in entry["sentences"]:
+                            if s not in dataset_cache[key]:
+                                dataset_cache[key].append(s)
+                except Exception:
                     continue
+
+    # Load history
+    if os.path.exists(HISTORY_FILE):
+        try:
+            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                history_cache.update(data)
+        except Exception:
+            pass
     else:
-        print(f"⚠️ Dataset file '{DATASET_FILE}' not found.")
-    return dataset
+        save_history()
+
+    print(f"✅ Loaded {len(dataset_cache)} keywords and {len(history_cache)} history entries in {round(time.time() - start, 2)}s.")
 
 
 # -----------------------------
-# Load or auto-create usage history
+# Safe Async Save
 # -----------------------------
-def load_history():
-    if not os.path.exists(HISTORY_FILE):
-        print("🆕 No history file found. Creating new one...")
-        history = defaultdict(int)
-        save_history(history)
-        return history
-    try:
-        with open(HISTORY_FILE, "r") as f:
-            data = json.load(f)
-            return defaultdict(int, data)
-    except json.JSONDecodeError:
-        print("⚠️ History file corrupt. Resetting new file.")
-        history = defaultdict(int)
-        save_history(history)
-        return history
+def save_history():
+    def _save():
+        with lock:
+            with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+                json.dump(dict(history_cache), f, indent=2)
+    threading.Thread(target=_save, daemon=True).start()
+
+
+def save_dataset(keyword, suggestions):
+    """Efficiently update the dataset file — distinct per keyword."""
+    with lock:
+        # ✅ Ensure dataset_cache stays clean (unique + merged)
+        if keyword in dataset_cache:
+            for s in suggestions:
+                if s not in dataset_cache[keyword]:
+                    dataset_cache[keyword].append(s)
+        else:
+            dataset_cache[keyword] = suggestions
+
+        # Rebuild the JSONL file cleanly (deduplicated)
+        with open(DATASET_FILE, "w", encoding="utf-8") as f:
+            for k, v in dataset_cache.items():
+                json.dump({"keyword": k, "sentences": v}, f)
+                f.write("\n")
 
 
 # -----------------------------
-# Save history after updates
+# Groq Sentence Generator
 # -----------------------------
-def save_history(history):
-    # Convert defaultdict to normal dict before saving
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(dict(history), f, indent=2)
-
-
-# -----------------------------
-# Groq fallback: generate new suggestions
-# -----------------------------
-def groq_generate_suggestions(keyword: str):
+def groq_generate_suggestions(keyword):
+    """Generate up to 3 simple ALS-friendly short sentences."""
     prompt = f"""
-You are an assistive text suggestion model that helps an ALS patient type faster
-by predicting natural short sentences.
-
-Requirements:
-- Use the given text exactly or naturally within the sentences.
-- Keep each suggestion short (max 8–10 words).
-- Make them grammatically correct and human-like.
-- Do not add explanations or numbering.
-- Return exactly two suggestions separated by a "|" character.
-
-Given text: "{keyword}"
-Now generate two different complete sentence suggestions.
-Format strictly as:
-<sentence 1> | <sentence 2>
+You are helping an ALS patient communicate faster.
+Generate up to 3 short, simple sentences (3–6 words) using the word "{keyword}".
+No punctuation, no numbering, no explanations.
+Separate each with '|'.
+Examples:
+help → help me please | need your help | call nurse
+water → need water | drink water | get some water
+Now generate:
 """
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-    )
-
-    suggestion_text = response.choices[0].message.content.strip()
-    return [s.strip() for s in suggestion_text.split("|") if s.strip()][:2]
-
-
-# -----------------------------
-# Suggest sentences with personalization
-# -----------------------------
-def suggest_sentences(keyword: str):
-    dataset = load_dataset()
-    history = load_history()
-    keyword = keyword.lower().strip()
-
-    print(f"\n🧠 Searching suggestions for '{keyword}'...")
-
-    # Case 1: Keyword found in dataset
-    if keyword in dataset:
-        sentences = dataset[keyword]
-        ranked = sorted(sentences, key=lambda s: history.get(s, 0), reverse=True)
-        top_two = ranked[:2]
-
-        print("💬 Personalized Suggestions (based on your usage):")
-        for i, s in enumerate(top_two, 1):
-            print(f"  {i}. {s}")
-
-        # Update usage frequency
-        for s in top_two:
-            history[s] = history.get(s, 0) + 1
-        save_history(history)
-        return top_two
-
-    # Case 2: Keyword not in dataset → generate via Groq
-    print("⚡ Keyword not found in dataset, generating via Groq...")
     try:
-        suggestions = groq_generate_suggestions(keyword)
-        print("💡 Generated new suggestions:")
-        for i, s in enumerate(suggestions, 1):
-            print(f"  {i}. {s}")
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.5,
+        )
+        suggestion_text = response.choices[0].message.content.strip()
+        suggestions = [s.strip() for s in suggestion_text.split("|") if s.strip()][:3]
 
-        # Save to dataset and history
         if suggestions:
-            with open(DATASET_FILE, "a") as f:
-                json.dump({"keyword": keyword, "sentences": suggestions}, f)
-                f.write("\n")
-            for s in suggestions:
-                history[s] = history.get(s, 0) + 1
-            save_history(history)
+            # Ensure unique + short
+            unique_sents = list(dict.fromkeys(suggestions))
+            dataset_cache[keyword] = unique_sents
+            for s in unique_sents:
+                history_cache[s] += 1
+            save_dataset(keyword, unique_sents)
+            save_history()
 
         return suggestions
     except Exception as e:
-        print(f"❌ Error generating suggestions: {e}")
+        print(f"⚠️ Groq generation failed: {e}")
         return []
 
 
 # -----------------------------
-# Interactive loop
+# Local Search & Personalization
+# -----------------------------
+def local_suggestions(keyword):
+    """Return up to 3 best personalized cached sentences."""
+    keyword = keyword.lower().strip()
+    if keyword in dataset_cache:
+        sentences = dataset_cache[keyword]
+        ranked = sorted(sentences, key=lambda s: history_cache.get(s, 0), reverse=True)
+        for s in ranked[:3]:
+            history_cache[s] += 1
+        save_history()
+        return ranked[:3]
+    return None
+
+
+# -----------------------------
+# Main Suggestion Interface
+# -----------------------------
+def suggest_sentences(keyword):
+    """
+    Returns up to 3 short ALS-friendly sentences.
+    - Uses cache first
+    - Falls back to async Groq for unseen keywords
+    - Deduplicates everything
+    """
+    keyword = keyword.lower().strip()
+    if not keyword:
+        return []
+
+    local = local_suggestions(keyword)
+    if local:
+        return local
+
+    # Async Groq fallback if unseen
+    def background_update():
+        new_suggs = groq_generate_suggestions(keyword)
+        if new_suggs:
+            print(f"🧠 Cached new distinct suggestions for '{keyword}': {new_suggs}")
+
+    threading.Thread(target=background_update, daemon=True).start()
+    return []
+
+
+# -----------------------------
+# Preload at Import
+# -----------------------------
+preload_data()
+
+
+# -----------------------------
+# Example Run
 # -----------------------------
 if __name__ == "__main__":
-    suggestions = suggest_sentences("help")
-    print(suggestions)
+    print("Suggestions")
