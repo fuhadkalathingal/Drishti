@@ -11,7 +11,7 @@ FaceLandmarkerOptions = mp.tasks.vision.FaceLandmarkerOptions
 VisionRunningMode = mp.tasks.vision.RunningMode
 
 # --- Paths ---
-CONFIG_PATH = Path("config.yaml")
+CONFIG_PATH = Path("cache/config.yaml")
 
 # --- Initialize Mediapipe face detector ---
 options = FaceLandmarkerOptions(
