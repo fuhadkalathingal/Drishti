@@ -1,6 +1,12 @@
 {
-  "I need water": 5,
+  "I need water": 6,
   "Drink some water": 5,
   "I feel pain": 1,
-  "The pain is strong": 1
+  "The pain is strong": 1,
+  "I need help": 2,
+  "Can you help": 1,
+  "I am happy": 1,
+  "I am tired": 1,
+  "I am saying": 1,
+  "She keeps saying": 1
 }

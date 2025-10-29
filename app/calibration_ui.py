@@ -101,9 +101,9 @@ def consider_adjustment(expected_event: str):
 # ---------------------------------------------------------------------
 # MODERN DARK UI
 # ---------------------------------------------------------------------
-class CalibrationUI(tk.Tk):
-    def __init__(self):
-        super().__init__()
+class CalibrationUI(tk.Toplevel):
+    def __init__(self, master=None):
+        super().__init__(master)
         self.title("✨ Gaze Calibration")
         self.geometry("720x420")
         self.configure(bg="#0F1115")
@@ -216,10 +216,32 @@ class CalibrationUI(tk.Tk):
         self.current_step += 1
         self.run_next_step()
 
+def run_calibration_ui(root):
+    """Run the Calibration UI safely inside a shared Tk root."""
+    root.withdraw()
 
-# ---------------------------------------------------------------------
-# ENTRY POINT
-# ---------------------------------------------------------------------
-if __name__ == "__main__":
-    app = CalibrationUI()
-    app.mainloop()
+    app = CalibrationUI(root)
+
+    def on_complete():
+        app.destroy()
+        root.quit()
+
+    def on_close():
+        """Handle window close (X button)."""
+        app.destroy()
+        root.quit()
+
+    app.protocol("WM_DELETE_WINDOW", on_close)
+
+    original_run_next_step = app.run_next_step
+
+    def patched_run_next_step():
+        if app.current_step >= len(app.steps):
+            app.label.config(text="✅ Calibration Complete!", foreground="#00FFC6")
+            app.status_label.config(text="")
+            app.after(2000, on_complete)
+            return
+        original_run_next_step()
+
+    app.run_next_step = patched_run_next_step
+    root.mainloop()

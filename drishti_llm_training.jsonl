@@ -1,2 +1,6 @@
 {"keyword": "water", "sentences": ["I need water", "Drink some water"]}
 {"keyword": "pain", "sentences": ["I feel pain", "The pain is strong"]}
+{"keyword": "help", "sentences": ["I need help", "Can you help"]}
+{"keyword": "i", "sentences": ["I am happy", "I am tired"]}
+{"keyword": "i need", "sentences": ["I need help", "I need water"]}
+{"keyword": "saying", "sentences": ["I am saying", "She keeps saying"]}
