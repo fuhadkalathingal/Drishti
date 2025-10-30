@@ -18,10 +18,10 @@
     "heredity": 2
   },
   "i": {
-    "i": 13
+    "i": 14
   },
   "am": {
-    "am": 4
+    "am": 5
   },
   "i|am": {
     "going": 1,
@@ -232,12 +232,16 @@
     "some": 1
   },
   "words": {
-    "i": 3,
-    "am": 1,
+    "i": 4,
+    "am": 2,
     "information": 1,
-    "help": 1
+    "help": 1,
+    "ramin": 1
   },
   "information": {
     "information": 1
+  },
+  "ramin": {
+    "ramin": 1
   }
 }
