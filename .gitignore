@@ -13,9 +13,8 @@ env.bak/
 venv.bak/
 
 # Cache_files
-cache
 audio_cache
-config_backups
+cache/config_backups/
 
 # for testing purposes
 temp_speech.mp3
