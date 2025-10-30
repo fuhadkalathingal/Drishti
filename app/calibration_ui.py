@@ -158,6 +158,38 @@ class CalibrationUI(tk.Toplevel):
             ("Look up", "FU")
         ]
         self.current_step = 0
+        # --- Username entry box (TOP CENTER, White Box, Hide After Save) ---
+        username_frame = tk.Frame(self, bg="#0F1115")
+        username_frame.pack(pady=15)
+
+        ttk.Label(username_frame, text="Enter Your Name:", style="Status.TLabel").pack(side="left", padx=(0, 8))
+
+        self.username_var = tk.StringVar()
+
+        # White input box style
+        style.configure("Username.TEntry",
+                        fieldbackground="#FFFFFF",
+                        foreground="#000000",
+                        padding=8,
+                        borderwidth=2,
+                        relief="solid")
+
+        username_entry = ttk.Entry(username_frame,
+                                   textvariable=self.username_var,
+                                   width=22,
+                                   style="Username.TEntry")
+        username_entry.pack(side="left", padx=(0, 8))
+
+        def save_and_hide():
+            name = self.username_var.get().strip()
+            if name:
+                save_username(name)
+                username_frame.pack_forget()  # Remove input box frame completely
+                print(f"[UI] Username '{name}' saved and input removed.")
+
+        save_btn = ttk.Button(username_frame, text="Save ✅", command=save_and_hide)
+        save_btn.pack(side="left", padx=(8, 0))
+
 
         # Header label
         self.label = ttk.Label(self, text="", style="Header.TLabel")
@@ -174,28 +206,6 @@ class CalibrationUI(tk.Toplevel):
         self.footer = ttk.Label(self, text="Eye gesture calibration system", font=("Segoe UI", 9), foreground="#555555")
         self.footer.pack(side="bottom", pady=10)
 
-        # --- Username entry box (bottom right corner) ---
-        username_frame = tk.Frame(self, bg="#0F1115")
-        username_frame.place(relx=1.0, rely=1.0, anchor="se", x=-20, y=-15)
-
-        ttk.Label(username_frame, text="Username:", style="Status.TLabel").pack(side="left", padx=(0,5))
-        self.username_var = tk.StringVar()
-
-        # Load existing name if present
-        if USERNAME_FILE.exists():
-            try:
-                with open(USERNAME_FILE, "r") as f:
-                    existing = json.load(f)
-                    self.username_var.set(existing.get("name", ""))
-            except Exception:
-                pass
-
-        username_entry = ttk.Entry(username_frame, textvariable=self.username_var, width=20)
-        username_entry.pack(side="left")
-
-        save_btn = ttk.Button(username_frame, text="💾 Save",
-                              command=lambda: save_username(self.username_var.get()))
-        save_btn.pack(side="left", padx=(5,0))
 
     def start_calibration(self):
         self.start_button.pack_forget()
