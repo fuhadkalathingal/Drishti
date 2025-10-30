@@ -3,7 +3,7 @@ import tkinter as tk
 import random
 import threading
 import time
-from utils.speech import speak
+from app.utils.speech import speak
 from dotenv import load_dotenv
 from groq import Groq
 
@@ -114,9 +114,10 @@ def play_song():
 # ----------------------------
 # Drishti AI UI (Responsive Layout)
 # ----------------------------
-class DrishtiAIUI(tk.Tk):
-    def __init__(self):
-        super().__init__()
+class DrishtiAIUI(tk.Toplevel):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
         self.title("Drishti - From Vision To Voice")
         self.configure(bg="#121212")
         self.geometry("1150x700")

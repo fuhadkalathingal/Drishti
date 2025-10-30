@@ -8,7 +8,7 @@ MORSE_TO_ALPHA = {
     '.--.': 'p', '--.-': 'q', '.-.': 'r', '...': 's', '-': 't',
     '..-': 'u', '...-': 'v', '.--': 'w', '-..-': 'x', '-.--': 'y',
     '--..': 'z',
-    '.....': 'space', '-----': 'delete', '...--': 'play'
+    '.....': 'space', '-----': 'delete', '...--': 'play', '---..': 'chat'
 }
 
 def morse_to_letter(buffer):
@@ -31,18 +31,29 @@ def event_to_letter(event, buffer, string):
                     string = ""
                 elif tmp == "play":
                     speak(string)
+                elif tmp == "chat":
+                    from app.chat_ui import DrishtiAIUI
+                    import app.utils.global_state as gs
+
+                    if gs.main_ui:
+                        gs.main_ui.withdraw()  # hide main window
+
+                    chat_app = DrishtiAIUI(gs.main_ui)
+
+                    def on_close():
+                        chat_app.destroy()
+                        if gs.main_ui:
+                            gs.main_ui.deiconify()  # show main window again
+
+                    chat_app.protocol("WM_DELETE_WINDOW", on_close)
+                    chat_app.wait_window()  # block until chat window is closed
                 else:
                     string += tmp
-            #case "FR": 
-            #    string += " "
             case "FL": 
                 if buffer:
                     buffer = buffer[:-1]
                 else:
                     string = string[:-1]
-            #case "SL": 
-            #        buffer = ""
-            #        string = ""
 
     return buffer, string
 
