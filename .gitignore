@@ -13,7 +13,9 @@ env.bak/
 venv.bak/
 
 # Cache_files
-user_cache.json
+cache
+audio_cache
+config_backups
 
 # for testing purposes
 temp_speech.mp3

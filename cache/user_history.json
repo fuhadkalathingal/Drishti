@@ -8,5 +8,12 @@
   "turn on light": 14,
   "light is bright": 13,
   "need more light": 14,
-  "light is dim": 1
+  "light is dim": 1,
+  "try again now": 3,
+  "do it again": 12,
+  "say again": 8,
+  "try again": 9,
+  "help again": 1,
+  "come again": 2,
+  "say it again": 1
 }
