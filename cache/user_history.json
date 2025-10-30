@@ -8,5 +8,13 @@
   "turn on light": 14,
   "light is bright": 13,
   "need more light": 14,
-  "light is dim": 1
+  "light is dim": 1,
+  "i am trying to type this message as quickly as possible": 1,
+  "i think it is going to take some time to get used to this new system": 1,
+  "i am tired": 7,
+  "i am hungry": 7,
+  "i am thirsty": 7,
+  "need information": 4,
+  "get information": 4,
+  "share information": 4
 }

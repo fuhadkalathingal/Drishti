@@ -112,6 +112,9 @@ class DrishtiKeyboardUI(tk.Tk):
         # Updating the main input class
         self.fast_loop()
 
+        import app.utils.global_state as gs
+        gs.main_ui = self
+
     def fast_loop(self):
         datas_obj.update_all()
         self.input_var.set(f'"{datas_obj.written_string}"')

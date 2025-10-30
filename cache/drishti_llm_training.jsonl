@@ -9,3 +9,5 @@
 {"keyword": "family", "sentences": ["I love family", "family is here", "call my family"]}
 {"keyword": "music", "sentences": ["like music", "music is nice", "play music"]}
 {"keyword": "light", "sentences": ["turn on light", "light is bright", "need more light"]}
+{"keyword": "i am", "sentences": ["i am tired", "i am hungry", "i am thirsty"]}
+{"keyword": "information", "sentences": ["need information", "get information", "share information"]}
