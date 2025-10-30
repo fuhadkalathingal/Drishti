@@ -12,8 +12,8 @@ from app.core.eye_gesture import reload_gesture_detector
 # ---------------------------------------------------------------------
 # CONFIGURATION CONSTANTS
 # ---------------------------------------------------------------------
-CONFIG_PATH = Path("../config.yaml")
-BACKUP_DIR = Path("../config_backups")
+CONFIG_PATH = Path("cache/config.yaml")
+BACKUP_DIR = Path("cache/config_backups")
 BACKUP_DIR.mkdir(exist_ok=True)
 
 MIN_VAL, MAX_VAL = 0.0, 1.0
